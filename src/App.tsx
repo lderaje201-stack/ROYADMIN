@@ -314,6 +314,8 @@ export default function App() {
             unreadMessagesCount={unreadMessagesCount}
             onOpenNewBookingModal={() => setIsBookingModalOpen(true)}
             onOpenNewPatientModal={() => setIsPatientModalOpen(true)}
+            onOpenNewMedicalFileModal={() => setIsMedicalFileModalOpen(true)}
+            onOpenNewTeamModal={() => setIsTeamModalOpen(true)}
             onNavigateTab={setActiveTab}
             searchQuery={searchQuery}
             setSearchQuery={setSearchQuery}

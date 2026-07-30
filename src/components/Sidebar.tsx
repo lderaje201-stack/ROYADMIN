@@ -123,7 +123,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 <span className="font-bold text-slate-900 text-xs tracking-wider uppercase leading-tight truncate">
                   ROYAL DENTAL
                 </span>
-                <span className="text-[9px] text-blue-600 font-semibold tracking-widest uppercase truncate">
+                <span className="text-[9px] text-slate-600 font-semibold tracking-widest uppercase truncate">
                   Specialized Center
                 </span>
               </div>
@@ -136,7 +136,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 e.stopPropagation();
                 onToggleCollapse();
               }}
-              className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-200/60 transition-all duration-200 opacity-0 group-hover:opacity-100 cursor-pointer shrink-0 ml-1"
+              className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-black/5 transition-all duration-200 opacity-0 group-hover:opacity-100 cursor-pointer shrink-0 ml-1"
               title="Collapse Sidebar"
             >
               <PanelLeftClose className="w-4 h-4" />
@@ -147,7 +147,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
             <button
               id="sidebar-expand-btn"
               onClick={onToggleCollapse}
-              className="relative p-2 rounded-xl hover:bg-slate-100/80 transition-all duration-200 cursor-pointer flex items-center justify-center group"
+              className="relative p-2 rounded-xl hover:bg-black/5 transition-all duration-200 cursor-pointer flex items-center justify-center group"
               title="Expand Sidebar"
             >
               <img 
@@ -155,7 +155,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 alt="Royal Dental Logo" 
                 className="h-8 w-auto object-contain shrink-0 group-hover:opacity-20 transition-all duration-200" 
               />
-              <PanelLeftOpen className="w-5 h-5 text-blue-600 absolute inset-0 m-auto opacity-0 group-hover:opacity-100 transition-all duration-200 scale-90 group-hover:scale-100" />
+              <PanelLeftOpen className="w-5 h-5 text-slate-900 absolute inset-0 m-auto opacity-0 group-hover:opacity-100 transition-all duration-200 scale-90 group-hover:scale-100" />
             </button>
             {/* Hover Tooltip in Collapsed Mode */}
             <div className="absolute left-full ml-3 px-3 py-1.5 bg-slate-900 text-slate-100 text-xs font-medium rounded-xl shadow-xl whitespace-nowrap z-50 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-200 top-1/2 -translate-y-1/2">
@@ -169,9 +169,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
       {!isCollapsed && (
         <div className="px-4 pb-3">
           <div className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-100/60 border border-slate-200/50 rounded-xl text-[11px] text-slate-600">
-            <ShieldCheck className="w-3.5 h-3.5 text-blue-600 shrink-0" />
+            <ShieldCheck className="w-3.5 h-3.5 text-slate-800 shrink-0" />
             <span className="font-semibold text-slate-800">Staff Admin Portal</span>
-            <span className="ml-auto text-[9px] bg-white text-blue-700 font-bold px-1.5 py-0.5 rounded-md border border-slate-200/60">
+            <span className="ml-auto text-[9px] bg-white text-slate-800 font-bold px-1.5 py-0.5 rounded-md border border-slate-200/60">
               v1.0
             </span>
           </div>
@@ -198,11 +198,11 @@ export const Sidebar: React.FC<SidebarProps> = ({
                   onClick={() => setActiveTab(item.id)}
                   className={`p-3 rounded-2xl transition-all duration-200 flex items-center justify-center relative cursor-pointer ${
                     isActive
-                      ? 'bg-slate-900 text-white shadow-2xs'
-                      : 'text-slate-500 hover:text-slate-900 hover:bg-slate-100/70'
+                      ? 'bg-black/10 text-slate-900 font-bold shadow-2xs border border-black/10'
+                      : 'text-slate-500 hover:text-slate-900 hover:bg-black/5'
                   }`}
                 >
-                  <Icon className={`w-[18px] h-[18px] ${isActive ? 'text-white' : 'text-slate-500 group-hover:text-slate-800'}`} />
+                  <Icon className={`w-[18px] h-[18px] ${isActive ? 'text-slate-900' : 'text-slate-500 group-hover:text-slate-800'}`} />
 
                   {/* Red/Green Unread Dot Indicator */}
                   {item.badge !== null && (
@@ -230,12 +230,12 @@ export const Sidebar: React.FC<SidebarProps> = ({
               onClick={() => setActiveTab(item.id)}
               className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-2xl text-xs font-medium transition-all duration-150 cursor-pointer ${
                 isActive
-                  ? 'bg-slate-900 text-white font-semibold shadow-2xs'
-                  : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100/70'
+                  ? 'bg-black/10 text-slate-900 font-bold shadow-2xs border border-black/10'
+                  : 'text-slate-600 hover:text-slate-900 hover:bg-black/5'
               }`}
             >
               <div className="flex items-center gap-3">
-                <Icon className={`w-[18px] h-[18px] ${isActive ? 'text-white' : 'text-slate-400 group-hover:text-slate-600'}`} />
+                <Icon className={`w-[18px] h-[18px] ${isActive ? 'text-slate-900' : 'text-slate-400 group-hover:text-slate-600'}`} />
                 <span className="tracking-tight">{item.label}</span>
               </div>
               
@@ -245,7 +245,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                     {item.badge}
                   </span>
                 )}
-                {isActive && <ChevronRight className="w-3.5 h-3.5 text-slate-400" />}
+                {isActive && <ChevronRight className="w-3.5 h-3.5 text-slate-600" />}
               </div>
             </button>
           );

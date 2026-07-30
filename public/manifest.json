@@ -1,0 +1,53 @@
+{
+  "short_name": "ROYADMIN",
+  "name": "ROYADMIN - Royal Dental Portal",
+  "description": "Royal Higher Specialized Dental Practice & Clinical Portal",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0f172a",
+  "theme_color": "#0f172a",
+  "orientation": "any",
+  "scope": "/",
+  "categories": ["medical", "business", "productivity"],
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "type": "image/svg+xml",
+      "sizes": "any"
+    },
+    {
+      "src": "/pwa-192.png",
+      "type": "image/png",
+      "sizes": "192x192",
+      "purpose": "any"
+    },
+    {
+      "src": "/pwa-512.png",
+      "type": "image/png",
+      "sizes": "512x512",
+      "purpose": "any"
+    },
+    {
+      "src": "/pwa-512.png",
+      "type": "image/png",
+      "sizes": "512x512",
+      "purpose": "maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Appointments",
+      "short_name": "Bookings",
+      "description": "View clinic schedule and appointments",
+      "url": "/?tab=bookings",
+      "icons": [{ "src": "/favicon.svg", "sizes": "any" }]
+    },
+    {
+      "name": "Patient Directory",
+      "short_name": "Patients",
+      "description": "Search and manage registered patients",
+      "url": "/?tab=patients",
+      "icons": [{ "src": "/favicon.svg", "sizes": "any" }]
+    }
+  ]
+}

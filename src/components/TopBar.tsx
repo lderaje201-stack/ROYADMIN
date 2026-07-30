@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { NavigationTab } from '../types';
 import { 
   Bell, 
@@ -8,8 +8,17 @@ import {
   Clock, 
   CheckCircle2, 
   AlertTriangle,
-  Plus
+  Plus,
+  Download,
+  Wifi,
+  WifiOff,
+  Smartphone
 } from 'lucide-react';
+import { 
+  subscribePWAInstall, 
+  promptPWAInstall, 
+  subscribeOnlineStatus 
+} from '../pwaManager';
 
 interface TopBarProps {
   activeTab: NavigationTab;
@@ -38,6 +47,28 @@ export const TopBar: React.FC<TopBarProps> = ({
 }) => {
   const [showNotifications, setShowNotifications] = useState(false);
   const [showQuickAddMenu, setShowQuickAddMenu] = useState(false);
+  const [canInstallApp, setCanInstallApp] = useState(false);
+  const [isOnline, setIsOnline] = useState(true);
+  const [isInstalling, setIsInstalling] = useState(false);
+
+  useEffect(() => {
+    const unsubPWA = subscribePWAInstall((canInstall) => {
+      setCanInstallApp(canInstall);
+    });
+    const unsubOnline = subscribeOnlineStatus((online) => {
+      setIsOnline(online);
+    });
+    return () => {
+      unsubPWA();
+      unsubOnline();
+    };
+  }, []);
+
+  const handleInstallPWA = async () => {
+    setIsInstalling(true);
+    await promptPWAInstall();
+    setIsInstalling(false);
+  };
 
   const getPageTitle = (tab: NavigationTab) => {
     switch (tab) {
@@ -109,8 +140,43 @@ export const TopBar: React.FC<TopBarProps> = ({
         )}
       </div>
 
-      {/* Right Controls: Search, Combined Quick Add (+), and Notifications Bell */}
+      {/* Right Controls: Search, PWA Install / Status, Combined Quick Add (+), and Notifications Bell */}
       <div className="flex items-center gap-3">
+        {/* Connection Status Badge */}
+        {!isOnline ? (
+          <div 
+            id="pwa-offline-status-badge"
+            className="flex items-center gap-1.5 px-2.5 py-1 bg-amber-50 text-amber-800 border border-amber-200/80 rounded-xl text-xs font-semibold animate-pulse"
+            title="Application operating in Progressive Offline Mode"
+          >
+            <WifiOff className="w-3.5 h-3.5 text-amber-600" />
+            <span className="hidden md:inline">Offline Mode</span>
+          </div>
+        ) : (
+          <div 
+            id="pwa-online-status-badge"
+            className="hidden lg:flex items-center gap-1.5 px-2.5 py-1 bg-emerald-50/80 text-emerald-800 border border-emerald-200/60 rounded-xl text-[11px] font-medium"
+            title="Service Worker Active • Network Online"
+          >
+            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+            <span>PWA Ready</span>
+          </div>
+        )}
+
+        {/* PWA Install App Button */}
+        {canInstallApp && (
+          <button
+            id="pwa-install-app-btn"
+            onClick={handleInstallPWA}
+            disabled={isInstalling}
+            className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-900 hover:bg-black text-white rounded-xl text-xs font-semibold transition-all shadow-2xs hover:shadow-xs cursor-pointer"
+            title="Install ROYADMIN as a Desktop or Mobile Progressive Web App"
+          >
+            <Smartphone className="w-3.5 h-3.5 text-amber-400" />
+            <span className="hidden sm:inline">Install App</span>
+          </button>
+        )}
+
         {/* Quick Search - ChatGPT-inspired rounded pill */}
         <div className="relative w-48 sm:w-64">
           <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />

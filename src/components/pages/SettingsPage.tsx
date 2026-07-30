@@ -1,0 +1,230 @@
+import React, { useState } from 'react';
+import { 
+  Settings, 
+  User, 
+  Building2, 
+  Bell, 
+  ShieldCheck, 
+  Save, 
+  Lock, 
+  Mail, 
+  Phone, 
+  Clock, 
+  Database,
+  CheckCircle2
+} from 'lucide-react';
+
+interface SettingsPageProps {
+  onSaveSettings: (msg: string) => void;
+}
+
+export const SettingsPage: React.FC<SettingsPageProps> = ({ onSaveSettings }) => {
+  const [adminName, setAdminName] = useState('Dr. Amira Al-Husseini');
+  const [adminEmail, setAdminEmail] = useState('amira.husseini@royaldental.com');
+  const [adminRole, setAdminRole] = useState('Chief Medical Administrator');
+
+  const [clinicName, setClinicName] = useState('Royal Higher Specialized Dental Center');
+  const [clinicPhone, setClinicPhone] = useState('+965 2200 1100');
+  const [emergencyPhone, setEmergencyPhone] = useState('+965 9900 8899');
+  const [clinicAddress, setClinicAddress] = useState('Royal Specialized Tower, Floor 14-16, Salmiya, Kuwait');
+
+  const [smsNotifications, setSmsNotifications] = useState(true);
+  const [emailNotifications, setEmailNotifications] = useState(true);
+  const [autoConfirmBookings, setAutoConfirmBookings] = useState(false);
+  const [auditLogging, setAuditLogging] = useState(true);
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    onSaveSettings('Clinic system configuration updated successfully.');
+  };
+
+  return (
+    <div id="settings-page" className="p-6 max-w-4xl space-y-6">
+      <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-xs flex items-center justify-between">
+        <div>
+          <h2 className="text-sm font-bold text-slate-900">Clinic System Settings</h2>
+          <p className="text-xs text-slate-500">
+            Configure staff administrator account details, facility contact, and automated notifications
+          </p>
+        </div>
+        <button
+          id="top-save-settings-btn"
+          onClick={handleSubmit}
+          className="flex items-center gap-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold px-4 py-2 rounded-lg transition-colors shadow-xs"
+        >
+          <Save className="w-4 h-4" />
+          <span>Save Changes</span>
+        </button>
+      </div>
+
+      <form onSubmit={handleSubmit} className="space-y-6">
+        {/* Admin Account Card */}
+        <div className="bg-white border border-slate-200 rounded-xl p-6 shadow-xs space-y-4">
+          <div className="flex items-center gap-2 pb-3 border-b border-slate-100">
+            <User className="w-5 h-5 text-blue-600" />
+            <h3 className="text-sm font-bold text-slate-900">Administrator Profile</h3>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-xs font-semibold text-slate-700 mb-1">Staff Administrator Name</label>
+              <input
+                id="settings-admin-name"
+                type="text"
+                required
+                value={adminName}
+                onChange={e => setAdminName(e.target.value)}
+                className="w-full bg-slate-50 border border-slate-300 rounded-lg px-3 py-2 text-xs text-slate-800 focus:ring-2 focus:ring-blue-600 focus:outline-none"
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-semibold text-slate-700 mb-1">Staff Work Email</label>
+              <input
+                id="settings-admin-email"
+                type="email"
+                required
+                value={adminEmail}
+                onChange={e => setAdminEmail(e.target.value)}
+                className="w-full bg-slate-50 border border-slate-300 rounded-lg px-3 py-2 text-xs text-slate-800 focus:ring-2 focus:ring-blue-600 focus:outline-none"
+              />
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-xs font-semibold text-slate-700 mb-1">Administrative Privilege Level</label>
+            <input
+              id="settings-admin-role"
+              type="text"
+              readOnly
+              value={adminRole}
+              className="w-full bg-slate-100 border border-slate-200 rounded-lg px-3 py-2 text-xs text-slate-600 font-medium cursor-not-allowed"
+            />
+          </div>
+        </div>
+
+        {/* Clinic Facility Info Card */}
+        <div className="bg-white border border-slate-200 rounded-xl p-6 shadow-xs space-y-4">
+          <div className="flex items-center gap-2 pb-3 border-b border-slate-100">
+            <Building2 className="w-5 h-5 text-blue-600" />
+            <h3 className="text-sm font-bold text-slate-900">Clinic Facility Details</h3>
+          </div>
+
+          <div>
+            <label className="block text-xs font-semibold text-slate-700 mb-1">Official Dental Center Name</label>
+            <input
+              id="settings-clinic-name"
+              type="text"
+              required
+              value={clinicName}
+              onChange={e => setClinicName(e.target.value)}
+              className="w-full bg-slate-50 border border-slate-300 rounded-lg px-3 py-2 text-xs text-slate-800 focus:ring-2 focus:ring-blue-600 focus:outline-none"
+            />
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-xs font-semibold text-slate-700 mb-1">Main Reception Desk Hotline</label>
+              <input
+                id="settings-clinic-phone"
+                type="text"
+                required
+                value={clinicPhone}
+                onChange={e => setClinicPhone(e.target.value)}
+                className="w-full bg-slate-50 border border-slate-300 rounded-lg px-3 py-2 text-xs text-slate-800 focus:ring-2 focus:ring-blue-600 focus:outline-none"
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-semibold text-slate-700 mb-1">24/7 Dental Emergency Line</label>
+              <input
+                id="settings-emergency-phone"
+                type="text"
+                required
+                value={emergencyPhone}
+                onChange={e => setEmergencyPhone(e.target.value)}
+                className="w-full bg-slate-50 border border-slate-300 rounded-lg px-3 py-2 text-xs text-slate-800 focus:ring-2 focus:ring-blue-600 focus:outline-none"
+              />
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-xs font-semibold text-slate-700 mb-1">Physical Address</label>
+            <input
+              id="settings-clinic-address"
+              type="text"
+              required
+              value={clinicAddress}
+              onChange={e => setClinicAddress(e.target.value)}
+              className="w-full bg-slate-50 border border-slate-300 rounded-lg px-3 py-2 text-xs text-slate-800 focus:ring-2 focus:ring-blue-600 focus:outline-none"
+            />
+          </div>
+        </div>
+
+        {/* Notifications & Security Preferences */}
+        <div className="bg-white border border-slate-200 rounded-xl p-6 shadow-xs space-y-4">
+          <div className="flex items-center gap-2 pb-3 border-b border-slate-100">
+            <Bell className="w-5 h-5 text-blue-600" />
+            <h3 className="text-sm font-bold text-slate-900">Automation & Security Rules</h3>
+          </div>
+
+          <div className="space-y-3">
+            <div className="flex items-center justify-between p-3 bg-slate-50 rounded-lg border border-slate-200">
+              <div>
+                <span className="block text-xs font-bold text-slate-900">Automated Patient SMS Reminders</span>
+                <span className="text-[11px] text-slate-500">Send text confirmation 24 hours prior to appointment</span>
+              </div>
+              <input
+                id="settings-sms-toggle"
+                type="checkbox"
+                checked={smsNotifications}
+                onChange={e => setSmsNotifications(e.target.checked)}
+                className="w-4 h-4 text-blue-600 rounded border-slate-300 focus:ring-blue-500"
+              />
+            </div>
+
+            <div className="flex items-center justify-between p-3 bg-slate-50 rounded-lg border border-slate-200">
+              <div>
+                <span className="block text-xs font-bold text-slate-900">Email Diagnostic File Notifications</span>
+                <span className="text-[11px] text-slate-500">Notify staff when radiologist uploads new CBCT/X-Ray files</span>
+              </div>
+              <input
+                id="settings-email-toggle"
+                type="checkbox"
+                checked={emailNotifications}
+                onChange={e => setEmailNotifications(e.target.checked)}
+                className="w-4 h-4 text-blue-600 rounded border-slate-300 focus:ring-blue-500"
+              />
+            </div>
+
+            <div className="flex items-center justify-between p-3 bg-slate-50 rounded-lg border border-slate-200">
+              <div>
+                <span className="block text-xs font-bold text-slate-900">System Audit Trail Logging</span>
+                <span className="text-[11px] text-slate-500">Log all staff password resets and medical chart access</span>
+              </div>
+              <input
+                id="settings-audit-toggle"
+                type="checkbox"
+                checked={auditLogging}
+                onChange={e => setAuditLogging(e.target.checked)}
+                className="w-4 h-4 text-blue-600 rounded border-slate-300 focus:ring-blue-500"
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* Bottom Save Action */}
+        <div className="flex justify-end pt-2">
+          <button
+            id="bottom-save-settings-btn"
+            type="submit"
+            className="flex items-center gap-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold px-6 py-2.5 rounded-lg transition-colors shadow-xs"
+          >
+            <Save className="w-4 h-4" />
+            <span>Save Clinic Settings</span>
+          </button>
+        </div>
+      </form>
+    </div>
+  );
+};

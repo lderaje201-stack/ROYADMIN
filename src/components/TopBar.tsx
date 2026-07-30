@@ -1,0 +1,245 @@
+import React, { useState } from 'react';
+import { NavigationTab } from '../types';
+import { 
+  Bell, 
+  Search, 
+  Calendar, 
+  UserPlus, 
+  Clock, 
+  CheckCircle2, 
+  AlertTriangle,
+  Plus
+} from 'lucide-react';
+
+interface TopBarProps {
+  activeTab: NavigationTab;
+  pendingBookingsCount: number;
+  unreadMessagesCount: number;
+  onOpenNewBookingModal: () => void;
+  onOpenNewPatientModal: () => void;
+  onNavigateTab: (tab: NavigationTab) => void;
+  searchQuery: string;
+  setSearchQuery: (query: string) => void;
+  isSidebarCollapsed?: boolean;
+  onToggleSidebar?: () => void;
+}
+
+export const TopBar: React.FC<TopBarProps> = ({
+  activeTab,
+  pendingBookingsCount,
+  unreadMessagesCount,
+  onOpenNewBookingModal,
+  onOpenNewPatientModal,
+  onNavigateTab,
+  searchQuery,
+  setSearchQuery,
+  isSidebarCollapsed = false,
+  onToggleSidebar
+}) => {
+  const [showNotifications, setShowNotifications] = useState(false);
+  const [showQuickAddMenu, setShowQuickAddMenu] = useState(false);
+
+  const getPageTitle = (tab: NavigationTab) => {
+    switch (tab) {
+      case 'overview': return 'Clinic Overview';
+      case 'bookings': return 'Appointments & Bookings';
+      case 'messages': return 'Patient Communications';
+      case 'medical-files': return 'Medical Records & Diagnostic Files';
+      case 'patients': return 'Patient Directory';
+      case 'team-members': return 'Doctor & Specialist Profiles';
+      case 'reviews': return 'Patient Reviews Management';
+      case 'analytics': return 'Clinic Performance Analytics & Insights';
+      case 'settings': return 'Clinic System Settings';
+      default: return 'Admin Panel';
+    }
+  };
+
+  const notifications = [
+    {
+      id: 'N-1',
+      title: `${pendingBookingsCount} Pending Bookings`,
+      description: 'Requires clinic confirmation for tomorrow',
+      time: '10m ago',
+      type: 'warning',
+      tab: 'bookings' as NavigationTab
+    },
+    {
+      id: 'N-2',
+      title: `${unreadMessagesCount} Unread Patient Messages`,
+      description: 'Sarah Al-Mansoor asked about Invisalign tray #4',
+      time: '25m ago',
+      type: 'info',
+      tab: 'messages' as NavigationTab
+    },
+    {
+      id: 'N-3',
+      title: 'New CBCT 3D Scan Uploaded',
+      description: 'Patient Tariq Al-Hamad scan ready for review',
+      time: '1h ago',
+      type: 'success',
+      tab: 'medical-files' as NavigationTab
+    }
+  ];
+
+  return (
+    <header 
+      id="admin-topbar" 
+      className="h-16 bg-white border-b border-slate-200 px-6 flex items-center justify-between sticky top-0 z-20 shadow-xs"
+    >
+      {/* Page Title */}
+      <div className="flex items-center gap-3">
+        <div>
+          <h1 className="text-lg font-bold text-slate-900 tracking-tight flex items-center gap-2">
+            {getPageTitle(activeTab)}
+          </h1>
+          <p className="text-xs text-slate-500 font-medium">
+            Royal Higher Specialized Dental Center • Staff Admin
+          </p>
+        </div>
+
+        {pendingBookingsCount > 0 && (
+          <button
+            id="pending-bookings-indicator"
+            onClick={() => onNavigateTab('bookings')}
+            className="hidden sm:flex items-center gap-1.5 px-3 py-1 bg-amber-50 text-amber-800 border border-amber-200 rounded-full text-xs font-semibold hover:bg-amber-100 transition-colors cursor-pointer"
+          >
+            <Clock className="w-3.5 h-3.5 text-amber-600 animate-pulse" />
+            <span>{pendingBookingsCount} pending</span>
+          </button>
+        )}
+      </div>
+
+      {/* Right Controls: Search, Combined Quick Add (+), and Notifications Bell */}
+      <div className="flex items-center gap-3">
+        {/* Quick Search */}
+        <div className="relative w-48 sm:w-64">
+          <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+          <input
+            id="topbar-search-input"
+            type="text"
+            placeholder="Search patient, doctor, booking..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full bg-slate-50 border border-slate-200 text-xs text-slate-800 rounded-lg pl-9 pr-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:bg-white transition-all placeholder:text-slate-400"
+          />
+        </div>
+
+        {/* Combined Single "+" Dropdown Button */}
+        <div className="relative">
+          <button
+            id="quick-add-combined-btn"
+            onClick={() => {
+              setShowQuickAddMenu(!showQuickAddMenu);
+              setShowNotifications(false);
+            }}
+            className="flex items-center justify-center w-9 h-9 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors shadow-xs"
+            title="Create New..."
+          >
+            <Plus className="w-5 h-5" />
+          </button>
+
+          {showQuickAddMenu && (
+            <div 
+              id="quick-add-dropdown"
+              className="absolute right-0 mt-2 w-48 bg-white border border-slate-200 rounded-xl shadow-xl z-50 py-1.5 animate-in fade-in zoom-in-95 duration-100"
+            >
+              <button
+                id="quick-dropdown-new-booking"
+                onClick={() => {
+                  onOpenNewBookingModal();
+                  setShowQuickAddMenu(false);
+                }}
+                className="w-full text-left px-3.5 py-2 hover:bg-blue-50 text-xs text-slate-800 font-semibold flex items-center gap-2.5 transition-colors"
+              >
+                <div className="p-1 bg-blue-100 text-blue-700 rounded">
+                  <Calendar className="w-3.5 h-3.5" />
+                </div>
+                <span>+ New Booking</span>
+              </button>
+
+              <button
+                id="quick-dropdown-new-patient"
+                onClick={() => {
+                  onOpenNewPatientModal();
+                  setShowQuickAddMenu(false);
+                }}
+                className="w-full text-left px-3.5 py-2 hover:bg-blue-50 text-xs text-slate-800 font-semibold flex items-center gap-2.5 transition-colors border-t border-slate-100"
+              >
+                <div className="p-1 bg-indigo-100 text-indigo-700 rounded">
+                  <UserPlus className="w-3.5 h-3.5" />
+                </div>
+                <span>+ Patient Profile</span>
+              </button>
+            </div>
+          )}
+        </div>
+
+        {/* Notifications Bell Icon */}
+        <div className="relative">
+          <button
+            id="notifications-bell-btn"
+            onClick={() => {
+              setShowNotifications(!showNotifications);
+              setShowQuickAddMenu(false);
+            }}
+            className="relative p-2 text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-colors"
+            title="Notifications"
+          >
+            <Bell className="w-5 h-5" />
+            {(pendingBookingsCount > 0 || unreadMessagesCount > 0) && (
+              <span className="absolute top-1.5 right-1.5 w-2.5 h-2.5 bg-rose-500 rounded-full ring-2 ring-white animate-pulse" />
+            )}
+          </button>
+
+          {showNotifications && (
+            <div 
+              id="notifications-popover"
+              className="absolute right-0 mt-2 w-80 bg-white border border-slate-200 rounded-xl shadow-xl z-50 py-2 animate-in fade-in zoom-in-95 duration-100"
+            >
+              <div className="px-4 py-2 border-b border-slate-100 flex items-center justify-between">
+                <span className="text-xs font-bold text-slate-900">Clinic Alerts & Activity</span>
+                <span className="text-[10px] bg-blue-100 text-blue-800 font-semibold px-2 py-0.5 rounded-full">
+                  3 active
+                </span>
+              </div>
+
+              <div className="divide-y divide-slate-100 max-h-72 overflow-y-auto">
+                {notifications.map((n) => (
+                  <button
+                    key={n.id}
+                    onClick={() => {
+                      onNavigateTab(n.tab);
+                      setShowNotifications(false);
+                    }}
+                    className="w-full text-left p-3 hover:bg-slate-50 transition-colors flex items-start gap-3"
+                  >
+                    {n.type === 'warning' && <AlertTriangle className="w-4 h-4 text-amber-500 shrink-0 mt-0.5" />}
+                    {n.type === 'info' && <Clock className="w-4 h-4 text-blue-500 shrink-0 mt-0.5" />}
+                    {n.type === 'success' && <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0 mt-0.5" />}
+                    <div>
+                      <div className="text-xs font-semibold text-slate-900">{n.title}</div>
+                      <div className="text-[11px] text-slate-500">{n.description}</div>
+                      <div className="text-[10px] text-slate-400 mt-1">{n.time}</div>
+                    </div>
+                  </button>
+                ))}
+              </div>
+
+              <div className="p-2 border-t border-slate-100 text-center">
+                <button
+                  onClick={() => {
+                    onNavigateTab('overview');
+                    setShowNotifications(false);
+                  }}
+                  className="text-xs text-blue-600 font-semibold hover:underline"
+                >
+                  View full activity feed →
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    </header>
+  );
+};

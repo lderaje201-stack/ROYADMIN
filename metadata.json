@@ -1,0 +1,6 @@
+{
+  "name": "Royal Dental Admin",
+  "description": "Admin panel web app for Royal Higher Specialized Dental Center staff to manage bookings, messages, medical files, patients, team members, and settings.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

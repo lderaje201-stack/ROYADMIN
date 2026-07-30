@@ -12,7 +12,9 @@ import {
   ShieldCheck,
   BarChart3,
   ChevronRight,
-  Star
+  Star,
+  PanelLeftClose,
+  PanelLeftOpen
 } from 'lucide-react';
 
 interface SidebarProps {
@@ -103,45 +105,60 @@ export const Sidebar: React.FC<SidebarProps> = ({
         isCollapsed ? 'w-16' : 'w-64'
       } bg-slate-900 text-slate-200 border-r border-slate-800 flex flex-col h-screen fixed left-0 top-0 z-30 select-none shadow-xl transition-all duration-300 ease-in-out`}
     >
-      {/* Brand Header (Clickable Logo Toggles Sidebar) */}
+      {/* Brand Header (Hover to reveal toggle button) */}
       <div className={`p-3 flex items-center ${isCollapsed ? 'justify-center py-4' : 'justify-start'}`}>
         {!isCollapsed ? (
-          <button
-            id="sidebar-logo-toggle-btn"
-            onClick={onToggleCollapse}
-            className="w-full flex items-center gap-3 p-2 rounded-xl hover:bg-slate-800/60 transition-all duration-200 cursor-pointer group text-left"
-            title="Click logo to collapse sidebar"
-          >
-            <img 
-              src="https://res.cloudinary.com/htwjexwp/image/upload/v1784802020/logo_blue_bg_removed_clean_qstcf3.png" 
-              alt="Royal Dental Logo" 
-              className="h-9 w-auto object-contain shrink-0 group-hover:scale-105 transition-transform duration-200" 
-            />
-            <div className="flex flex-col min-w-0">
-              <span className="font-bold text-slate-100 text-xs tracking-wide leading-tight truncate group-hover:text-blue-400 transition-colors">
-                ROYAL DENTAL
-              </span>
-              <span className="text-[9px] text-blue-400 font-medium tracking-wider uppercase truncate">
-                Specialized Center
-              </span>
-            </div>
-          </button>
-        ) : (
-          <div className="relative group flex justify-center">
-            <button
-              id="sidebar-logo-toggle-btn"
-              onClick={onToggleCollapse}
-              className="p-2 rounded-xl hover:bg-slate-800/60 transition-all duration-200 cursor-pointer flex items-center justify-center"
-              title="Click logo to expand sidebar"
+          <div className="relative group w-full flex items-center justify-between p-2 rounded-xl hover:bg-slate-800/60 transition-all duration-200 cursor-pointer">
+            <div 
+              onClick={onToggleCollapse} 
+              className="flex items-center gap-3 min-w-0 flex-1"
+              title="Click logo to collapse sidebar"
             >
               <img 
                 src="https://res.cloudinary.com/htwjexwp/image/upload/v1784802020/logo_blue_bg_removed_clean_qstcf3.png" 
                 alt="Royal Dental Logo" 
-                className="h-8 w-auto object-contain shrink-0 group-hover:scale-110 transition-transform duration-200" 
+                className="h-9 w-auto object-contain shrink-0 group-hover:scale-105 transition-transform duration-200" 
               />
+              <div className="flex flex-col min-w-0">
+                <span className="font-bold text-slate-100 text-xs tracking-wide leading-tight truncate">
+                  ROYAL DENTAL
+                </span>
+                <span className="text-[9px] text-blue-400 font-medium tracking-wider uppercase truncate">
+                  Specialized Center
+                </span>
+              </div>
+            </div>
+
+            {/* Hover-revealed collapse button */}
+            <button
+              id="sidebar-collapse-btn"
+              onClick={(e) => {
+                e.stopPropagation();
+                onToggleCollapse();
+              }}
+              className="p-1.5 rounded-lg text-slate-400 hover:text-slate-100 hover:bg-slate-700/80 transition-all duration-200 opacity-0 group-hover:opacity-100 cursor-pointer shrink-0 ml-1"
+              title="Collapse Sidebar"
+            >
+              <PanelLeftClose className="w-4 h-4" />
+            </button>
+          </div>
+        ) : (
+          <div className="relative group flex justify-center w-full">
+            <button
+              id="sidebar-expand-btn"
+              onClick={onToggleCollapse}
+              className="relative p-2 rounded-xl hover:bg-slate-800/70 transition-all duration-200 cursor-pointer flex items-center justify-center group"
+              title="Expand Sidebar"
+            >
+              <img 
+                src="https://res.cloudinary.com/htwjexwp/image/upload/v1784802020/logo_blue_bg_removed_clean_qstcf3.png" 
+                alt="Royal Dental Logo" 
+                className="h-8 w-auto object-contain shrink-0 group-hover:opacity-20 transition-all duration-200" 
+              />
+              <PanelLeftOpen className="w-5 h-5 text-blue-400 absolute inset-0 m-auto opacity-0 group-hover:opacity-100 transition-all duration-200 scale-90 group-hover:scale-100" />
             </button>
             {/* Hover Tooltip in Collapsed Mode */}
-            <div className="absolute left-full ml-2 px-3 py-1.5 bg-slate-950 text-slate-100 text-xs font-semibold rounded-lg shadow-xl border border-slate-800 whitespace-nowrap z-50 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-150 top-1/2 -translate-y-1/2">
+            <div className="absolute left-full ml-2 px-3 py-1.5 bg-slate-950 text-slate-100 text-xs font-semibold rounded-lg shadow-xl border border-slate-800 whitespace-nowrap z-50 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-200 top-1/2 -translate-y-1/2">
               Expand Sidebar
             </div>
           </div>
@@ -184,7 +201,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
                       ? 'bg-blue-600 text-white shadow-sm shadow-blue-600/30'
                       : 'text-slate-400 hover:text-slate-100 hover:bg-slate-800/60'
                   }`}
-                  title={item.label}
                 >
                   <Icon className={`w-5 h-5 ${isActive ? 'text-white' : 'text-slate-400 group-hover:text-slate-200'}`} />
 
@@ -195,7 +211,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 </button>
 
                 {/* Hover Tooltip in Collapsed State */}
-                <div className="absolute left-full ml-2 px-3 py-1.5 bg-slate-950 text-slate-100 text-xs font-semibold rounded-lg shadow-xl border border-slate-800 whitespace-nowrap z-50 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-150 flex items-center gap-2 top-1/2 -translate-y-1/2">
+                <div className="absolute left-full ml-2 px-3 py-1.5 bg-slate-950 text-slate-100 text-xs font-semibold rounded-lg shadow-xl border border-slate-800 whitespace-nowrap z-50 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center gap-2 top-1/2 -translate-y-1/2">
                   <span>{item.label}</span>
                   {item.badge !== null && (
                     <span className={`text-[10px] font-bold px-1.5 py-0.2 rounded-full ${item.badgeColor || 'bg-slate-800 text-slate-300'}`}>
@@ -273,7 +289,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 alt="Logged in Staff"
                 className="w-8 h-8 rounded-full object-cover border border-slate-600 cursor-pointer"
               />
-              <div className="absolute left-full ml-2 px-2.5 py-1 bg-slate-950 text-slate-100 text-xs font-semibold rounded-md shadow-xl border border-slate-800 whitespace-nowrap z-50 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-150 top-1/2 -translate-y-1/2">
+              <div className="absolute left-full ml-2 px-2.5 py-1 bg-slate-950 text-slate-100 text-xs font-semibold rounded-md shadow-xl border border-slate-800 whitespace-nowrap z-50 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-200 top-1/2 -translate-y-1/2">
                 Dr. Amira Al-Husseini
               </div>
             </div>
@@ -286,7 +302,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
               >
                 <LogOut className="w-4 h-4" />
               </button>
-              <div className="absolute left-full ml-2 px-2.5 py-1 bg-rose-950 text-rose-200 text-xs font-semibold rounded-md shadow-xl border border-rose-800 whitespace-nowrap z-50 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-150 top-1/2 -translate-y-1/2">
+              <div className="absolute left-full ml-2 px-2.5 py-1 bg-rose-950 text-rose-200 text-xs font-semibold rounded-md shadow-xl border border-rose-800 whitespace-nowrap z-50 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-200 top-1/2 -translate-y-1/2">
                 Sign Out
               </div>
             </div>
@@ -296,4 +312,5 @@ export const Sidebar: React.FC<SidebarProps> = ({
     </aside>
   );
 };
+
 

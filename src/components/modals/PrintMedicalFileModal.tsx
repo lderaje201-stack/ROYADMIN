@@ -106,9 +106,9 @@ export const PrintMedicalFileModal: React.FC<PrintMedicalFileModalProps> = ({
         className="bg-slate-100 rounded-2xl shadow-2xl border border-slate-300 w-full max-w-4xl max-h-[95vh] flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-200"
       >
         {/* Modal Header & Toolbar (Hidden during actual print) */}
-        <div className="px-6 py-4 bg-slate-900 text-white flex flex-wrap items-center justify-between gap-4 border-b border-slate-800 shrink-0">
+        <div className="px-6 py-5 bg-slate-900 text-white flex flex-wrap items-center justify-between gap-4 border-b border-slate-800 shrink-0">
           <div className="flex items-center gap-3">
-            <div className="p-2 bg-blue-600 rounded-lg text-white shadow-xs">
+            <div className="p-2 bg-slate-800 rounded-xl text-white shadow-xs border border-slate-700">
               <Printer className="w-5 h-5" />
             </div>
             <div>
@@ -119,11 +119,11 @@ export const PrintMedicalFileModal: React.FC<PrintMedicalFileModalProps> = ({
             </div>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2.5">
             <button
               id="download-pdf-btn"
               onClick={handleDownloadPDF}
-              className="flex items-center gap-1.5 px-3 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 hover:text-white rounded-lg text-xs font-semibold border border-slate-700 transition-colors"
+              className="flex items-center gap-1.5 px-3.5 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-200 hover:text-white rounded-xl text-xs font-semibold border border-slate-700 transition-colors cursor-pointer"
             >
               <Download className="w-4 h-4" />
               <span className="hidden sm:inline">Export PDF</span>
@@ -131,15 +131,15 @@ export const PrintMedicalFileModal: React.FC<PrintMedicalFileModalProps> = ({
             <button
               id="confirm-print-btn"
               onClick={handleTriggerPrint}
-              className="flex items-center gap-1.5 px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-lg text-xs font-bold shadow-md hover:shadow-lg transition-all cursor-pointer"
+              className="flex items-center gap-1.5 px-4 py-2.5 bg-white text-slate-900 hover:bg-slate-100 rounded-xl text-xs font-bold transition-all cursor-pointer shadow-sm"
             >
-              <Printer className="w-4 h-4" />
+              <Printer className="w-4 h-4 text-slate-900" />
               <span>Print Official Document</span>
             </button>
             <button
               id="close-print-modal-btn"
               onClick={onClose}
-              className="p-2 text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg transition-colors ml-1"
+              className="p-2 text-slate-400 hover:text-white hover:bg-slate-800 rounded-xl transition-colors cursor-pointer"
             >
               <X className="w-5 h-5" />
             </button>

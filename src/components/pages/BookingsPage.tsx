@@ -245,28 +245,28 @@ export const BookingsPage: React.FC<BookingsPageProps> = ({
     switch (status) {
       case 'Pending':
         return (
-          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-amber-100 text-amber-800 border border-amber-300">
+          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-medium bg-amber-50 text-amber-700 border border-amber-200/60">
             <Clock className="w-3 h-3 text-amber-600" />
             <span>Pending</span>
           </span>
         );
       case 'Confirmed':
         return (
-          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-100 text-emerald-800 border border-emerald-300">
+          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-medium bg-emerald-50 text-emerald-700 border border-emerald-200/60">
             <CheckCircle2 className="w-3 h-3 text-emerald-600" />
             <span>Confirmed</span>
           </span>
         );
       case 'Cancelled':
         return (
-          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-rose-100 text-rose-800 border border-rose-300">
+          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-medium bg-rose-50 text-rose-700 border border-rose-200/60">
             <XCircle className="w-3 h-3 text-rose-600" />
             <span>Cancelled</span>
           </span>
         );
       case 'Completed':
         return (
-          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-blue-100 text-blue-800 border border-blue-300">
+          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-medium bg-blue-50 text-blue-700 border border-blue-200/60">
             <CheckCircle2 className="w-3 h-3 text-blue-600" />
             <span>Completed</span>
           </span>
@@ -279,15 +279,15 @@ export const BookingsPage: React.FC<BookingsPageProps> = ({
   const getBookingCardStyle = (status: BookingStatus) => {
     switch (status) {
       case 'Pending':
-        return 'border-l-4 border-amber-500 bg-amber-50/90 hover:bg-amber-100 text-amber-950';
+        return 'border-l-3 border-amber-500 bg-amber-50/60 hover:bg-amber-100/60 text-slate-900 border border-slate-200/60';
       case 'Confirmed':
-        return 'border-l-4 border-emerald-500 bg-emerald-50/90 hover:bg-emerald-100 text-emerald-950';
+        return 'border-l-3 border-emerald-500 bg-emerald-50/60 hover:bg-emerald-100/60 text-slate-900 border border-slate-200/60';
       case 'Cancelled':
-        return 'border-l-4 border-rose-500 bg-rose-50/70 hover:bg-rose-100 text-rose-950 opacity-70 line-through';
+        return 'border-l-3 border-rose-400 bg-rose-50/50 hover:bg-rose-100/50 text-slate-500 opacity-70 border border-slate-200/60 line-through';
       case 'Completed':
-        return 'border-l-4 border-blue-500 bg-blue-50/90 hover:bg-blue-100 text-blue-950';
+        return 'border-l-3 border-blue-500 bg-blue-50/60 hover:bg-blue-100/60 text-slate-900 border border-slate-200/60';
       default:
-        return 'border-l-4 border-slate-400 bg-slate-50 text-slate-900';
+        return 'border-l-3 border-slate-400 bg-slate-50 text-slate-900 border border-slate-200/60';
     }
   };
 
@@ -302,17 +302,17 @@ export const BookingsPage: React.FC<BookingsPageProps> = ({
   return (
     <div id="bookings-page" className="p-6 space-y-6">
       {/* Header Controls, View Switcher & Filters */}
-      <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-xs space-y-4">
+      <div className="bg-white p-6 rounded-2xl border border-neutral-200/60 shadow-[0_2px_10px_-3px_rgba(0,0,0,0.07)] space-y-4">
         {/* Top Navigation Row */}
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
           
           {/* Month / Week Navigators */}
           <div className="flex items-center gap-3">
-            <div className="flex items-center gap-1 bg-slate-100 p-1 rounded-lg border border-slate-200">
+            <div className="flex items-center gap-1 bg-neutral-100/80 p-1 rounded-xl border border-neutral-200/60">
               <button
                 id="cal-prev-btn"
                 onClick={handlePrev}
-                className="p-1.5 hover:bg-white rounded-md text-slate-700 transition-colors"
+                className="p-1.5 hover:bg-white rounded-lg text-slate-700 transition-colors cursor-pointer"
                 title="Previous"
               >
                 <ChevronLeft className="w-4 h-4" />
@@ -320,14 +320,14 @@ export const BookingsPage: React.FC<BookingsPageProps> = ({
               <button
                 id="cal-today-btn"
                 onClick={handleToday}
-                className="px-2.5 py-1 hover:bg-white rounded-md text-xs font-bold text-slate-800 transition-colors"
+                className="px-2.5 py-1 hover:bg-white rounded-lg text-xs font-bold text-slate-800 transition-colors cursor-pointer"
               >
                 Today
               </button>
               <button
                 id="cal-next-btn"
                 onClick={handleNext}
-                className="p-1.5 hover:bg-white rounded-md text-slate-700 transition-colors"
+                className="p-1.5 hover:bg-white rounded-lg text-slate-700 transition-colors cursor-pointer"
                 title="Next"
               >
                 <ChevronRight className="w-4 h-4" />
@@ -335,7 +335,7 @@ export const BookingsPage: React.FC<BookingsPageProps> = ({
             </div>
 
             <h2 className="text-lg font-extrabold text-slate-900 tracking-tight flex items-center gap-2">
-              <CalendarIcon className="w-5 h-5 text-blue-600" />
+              <CalendarIcon className="w-5 h-5 text-slate-800" />
               <span>{formattedMonthYear}</span>
             </h2>
           </div>
@@ -343,13 +343,13 @@ export const BookingsPage: React.FC<BookingsPageProps> = ({
           {/* View Mode Switcher & Add Button */}
           <div className="flex items-center gap-3 flex-wrap">
             {/* View Mode Selector */}
-            <div className="flex items-center bg-slate-100 p-1 rounded-lg border border-slate-200 text-xs font-semibold">
+            <div className="flex items-center bg-neutral-100/80 p-1 rounded-xl border border-neutral-200/60 text-xs font-semibold">
               <button
                 id="view-mode-month-btn"
                 onClick={() => setViewMode('month')}
                 className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md transition-all ${
                   viewMode === 'month'
-                    ? 'bg-blue-600 text-white shadow-xs font-bold'
+                    ? 'bg-slate-900 text-white shadow-2xs font-bold'
                     : 'text-slate-600 hover:text-slate-900'
                 }`}
               >
@@ -361,7 +361,7 @@ export const BookingsPage: React.FC<BookingsPageProps> = ({
                 onClick={() => setViewMode('week')}
                 className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md transition-all ${
                   viewMode === 'week'
-                    ? 'bg-blue-600 text-white shadow-xs font-bold'
+                    ? 'bg-slate-900 text-white shadow-2xs font-bold'
                     : 'text-slate-600 hover:text-slate-900'
                 }`}
               >
@@ -373,7 +373,7 @@ export const BookingsPage: React.FC<BookingsPageProps> = ({
                 onClick={() => setViewMode('list')}
                 className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md transition-all ${
                   viewMode === 'list'
-                    ? 'bg-blue-600 text-white shadow-xs font-bold'
+                    ? 'bg-slate-900 text-white shadow-2xs font-bold'
                     : 'text-slate-600 hover:text-slate-900'
                 }`}
               >
@@ -386,7 +386,7 @@ export const BookingsPage: React.FC<BookingsPageProps> = ({
             <button
               id="bookings-add-new-btn"
               onClick={onOpenNewBookingModal}
-              className="flex items-center justify-center gap-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold px-4 py-2 rounded-lg transition-colors shadow-xs shrink-0"
+              className="flex items-center justify-center gap-1.5 bg-slate-900 hover:bg-black text-white text-xs font-semibold px-4 py-2 rounded-xl transition-colors shadow-2xs shrink-0 cursor-pointer"
             >
               <Plus className="w-4 h-4" />
               <span>+ Add Booking</span>
@@ -455,9 +455,9 @@ export const BookingsPage: React.FC<BookingsPageProps> = ({
 
       {/* VIEW 1: MONTH CALENDAR */}
       {viewMode === 'month' && (
-        <div className="bg-white border border-slate-200 rounded-xl shadow-xs overflow-hidden">
+        <div className="bg-white border border-neutral-200/60 rounded-2xl shadow-[0_4px_20px_-4px_rgba(0,0,0,0.04)] overflow-hidden">
           {/* Day Names Header */}
-          <div className="grid grid-cols-7 bg-slate-50 border-b border-slate-200 text-center font-bold text-xs text-slate-600 py-2.5">
+          <div className="grid grid-cols-7 bg-neutral-50/80 border-b border-neutral-200/60 text-center font-bold text-xs text-slate-600 py-2.5">
             <div>Sun</div>
             <div>Mon</div>
             <div>Tue</div>
@@ -468,7 +468,7 @@ export const BookingsPage: React.FC<BookingsPageProps> = ({
           </div>
 
           {/* Month Days Grid */}
-          <div className="grid grid-cols-7 auto-rows-fr divide-x divide-y divide-slate-200 bg-slate-100 min-h-[580px]">
+          <div className="grid grid-cols-7 auto-rows-fr divide-x divide-y divide-neutral-200/60 bg-neutral-100/40 min-h-[580px]">
             {monthGrid.map((cell) => {
               const dayBookings = bookingsByDateMap[cell.dateStr] || [];
               const isDragOver = dragOverTarget === cell.dateStr;
@@ -491,7 +491,7 @@ export const BookingsPage: React.FC<BookingsPageProps> = ({
                     <span
                       className={`text-xs font-bold w-6 h-6 rounded-full flex items-center justify-center ${
                         cell.isToday
-                          ? 'bg-blue-600 text-white shadow-xs'
+                          ? 'bg-slate-900 text-white shadow-2xs'
                           : cell.isCurrentMonth
                           ? 'text-slate-700'
                           : 'text-slate-400'
@@ -555,7 +555,7 @@ export const BookingsPage: React.FC<BookingsPageProps> = ({
 
       {/* VIEW 2: WEEK CALENDAR */}
       {viewMode === 'week' && (
-        <div className="bg-white border border-slate-200 rounded-xl shadow-xs overflow-x-auto">
+        <div className="bg-white border border-neutral-200/60 rounded-2xl shadow-[0_2px_10px_-3px_rgba(0,0,0,0.07)] overflow-x-auto">
           <div className="min-w-[800px]">
             {/* Week Days Column Header */}
             <div className="grid grid-cols-8 bg-slate-50 border-b border-slate-200 text-center font-bold text-xs text-slate-700 py-3">
@@ -645,7 +645,7 @@ export const BookingsPage: React.FC<BookingsPageProps> = ({
 
       {/* VIEW 3: STANDARD LIST TABLE */}
       {viewMode === 'list' && (
-        <div className="bg-white border border-slate-200 rounded-xl shadow-xs overflow-hidden">
+        <div className="bg-white border border-neutral-200/60 rounded-2xl shadow-[0_2px_10px_-3px_rgba(0,0,0,0.07)] overflow-hidden">
           <div className="overflow-x-auto">
             <table id="bookings-table" className="w-full text-left text-xs border-collapse">
               <thead>

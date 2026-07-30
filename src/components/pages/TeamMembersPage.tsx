@@ -43,24 +43,24 @@ export const TeamMembersPage: React.FC<TeamMembersPageProps> = ({
   });
 
   return (
-    <div id="team-members-page" className="p-6 space-y-6">
+    <div id="team-members-page" className="p-8 space-y-6 max-w-7xl mx-auto">
       {/* Top Action & View Selector Bar */}
-      <div className="flex flex-col sm:flex-row items-center justify-between gap-4 bg-white p-4 rounded-xl border border-slate-200 shadow-xs">
+      <div className="flex flex-col sm:flex-row items-center justify-between gap-4 bg-white p-6 rounded-2xl border border-neutral-200/60 shadow-[0_2px_10px_-3px_rgba(0,0,0,0.07)]">
         <div>
-          <h2 className="text-sm font-bold text-slate-900">Clinical Team & Specialist Roster</h2>
-          <p className="text-xs text-slate-500">
+          <h2 className="text-base font-bold text-slate-900">Clinical Team & Specialist Roster</h2>
+          <p className="text-xs text-slate-500 mt-0.5">
             Manage doctor bios, published website profiles, and assigned dental suites
           </p>
         </div>
 
         <div className="flex items-center gap-3 w-full sm:w-auto">
           {/* Grid vs Table View Toggle */}
-          <div className="flex items-center bg-slate-100 p-1 rounded-lg border border-slate-200">
+          <div className="flex items-center bg-neutral-100/80 p-1 rounded-xl border border-neutral-200/60">
             <button
               id="view-mode-grid-btn"
               onClick={() => setViewMode('grid')}
-              className={`p-1.5 rounded-md text-xs transition-colors ${
-                viewMode === 'grid' ? 'bg-white shadow-xs text-blue-600 font-bold' : 'text-slate-500 hover:text-slate-800'
+              className={`p-1.5 rounded-lg text-xs transition-all cursor-pointer ${
+                viewMode === 'grid' ? 'bg-slate-900 shadow-2xs text-white font-bold' : 'text-slate-500 hover:text-slate-800'
               }`}
               title="Grid View"
             >
@@ -69,8 +69,8 @@ export const TeamMembersPage: React.FC<TeamMembersPageProps> = ({
             <button
               id="view-mode-table-btn"
               onClick={() => setViewMode('table')}
-              className={`p-1.5 rounded-md text-xs transition-colors ${
-                viewMode === 'table' ? 'bg-white shadow-xs text-blue-600 font-bold' : 'text-slate-500 hover:text-slate-800'
+              className={`p-1.5 rounded-lg text-xs transition-all cursor-pointer ${
+                viewMode === 'table' ? 'bg-slate-900 shadow-2xs text-white font-bold' : 'text-slate-500 hover:text-slate-800'
               }`}
               title="Table View"
             >
@@ -81,10 +81,10 @@ export const TeamMembersPage: React.FC<TeamMembersPageProps> = ({
           <button
             id="add-team-member-btn"
             onClick={onOpenAddModal}
-            className="flex items-center justify-center gap-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold px-4 py-2 rounded-lg transition-colors shadow-xs flex-1 sm:flex-initial"
+            className="flex items-center justify-center gap-2 bg-slate-900 hover:bg-black text-white text-xs font-semibold px-4 py-2.5 rounded-xl transition-all shadow-2xs flex-1 sm:flex-initial cursor-pointer"
           >
             <Plus className="w-4 h-4" />
-            <span>+ Add Doctor Profile</span>
+            <span>Add Doctor Profile</span>
           </button>
         </div>
       </div>
@@ -96,7 +96,7 @@ export const TeamMembersPage: React.FC<TeamMembersPageProps> = ({
             <div
               key={member.id}
               id={`team-card-${member.id}`}
-              className="bg-white border border-slate-200 rounded-xl overflow-hidden shadow-xs hover:border-blue-300 transition-all flex flex-col justify-between"
+              className="bg-white border border-neutral-200/60 rounded-2xl overflow-hidden shadow-[0_2px_10px_-3px_rgba(0,0,0,0.07)] transition-all flex flex-col justify-between"
             >
               <div className="p-5 space-y-4">
                 {/* Top Profile Header */}
@@ -180,7 +180,7 @@ export const TeamMembersPage: React.FC<TeamMembersPageProps> = ({
 
       {/* Table View */}
       {viewMode === 'table' && (
-        <div className="bg-white border border-slate-200 rounded-xl shadow-xs overflow-hidden">
+        <div className="bg-white border border-neutral-200/60 rounded-2xl shadow-[0_2px_10px_-3px_rgba(0,0,0,0.07)] overflow-hidden">
           <div className="overflow-x-auto">
             <table id="team-members-table" className="w-full text-left text-xs border-collapse">
               <thead>

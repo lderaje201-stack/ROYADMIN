@@ -54,26 +54,26 @@ export const MedicalFilesPage: React.FC<MedicalFilesPageProps> = ({
   const getCategoryBadge = (category: FileCategory) => {
     switch (category) {
       case 'X-Ray':
-        return <span className="bg-blue-100 text-blue-800 border border-blue-300 text-[10px] font-bold px-2.5 py-0.5 rounded-full">X-Ray</span>;
+        return <span className="bg-blue-50 text-blue-700 border border-blue-200/60 text-[10px] font-medium px-2.5 py-0.5 rounded-full">X-Ray</span>;
       case '3D Scan':
-        return <span className="bg-purple-100 text-purple-800 border border-purple-300 text-[10px] font-bold px-2.5 py-0.5 rounded-full">3D Scan</span>;
+        return <span className="bg-purple-50 text-purple-700 border border-purple-200/60 text-[10px] font-medium px-2.5 py-0.5 rounded-full">3D Scan</span>;
       case 'Treatment Plan':
-        return <span className="bg-emerald-100 text-emerald-800 border border-emerald-300 text-[10px] font-bold px-2.5 py-0.5 rounded-full">Treatment Plan</span>;
+        return <span className="bg-emerald-50 text-emerald-700 border border-emerald-200/60 text-[10px] font-medium px-2.5 py-0.5 rounded-full">Treatment Plan</span>;
       case 'Lab Report':
-        return <span className="bg-amber-100 text-amber-800 border border-amber-300 text-[10px] font-bold px-2.5 py-0.5 rounded-full">Lab Report</span>;
+        return <span className="bg-amber-50 text-amber-700 border border-amber-200/60 text-[10px] font-medium px-2.5 py-0.5 rounded-full">Lab Report</span>;
       case 'Consent Form':
-        return <span className="bg-slate-100 text-slate-800 border border-slate-300 text-[10px] font-bold px-2.5 py-0.5 rounded-full">Consent Form</span>;
+        return <span className="bg-slate-100 text-slate-700 border border-slate-200/60 text-[10px] font-medium px-2.5 py-0.5 rounded-full">Consent Form</span>;
       default:
-        return <span className="bg-slate-100 text-slate-800 text-[10px] font-bold px-2.5 py-0.5 rounded-full">{category}</span>;
+        return <span className="bg-slate-100 text-slate-700 text-[10px] font-medium px-2.5 py-0.5 rounded-full">{category}</span>;
     }
   };
 
   return (
-    <div id="medical-files-page" className="p-6 space-y-6">
+    <div id="medical-files-page" className="p-8 space-y-6 max-w-7xl mx-auto">
       {/* Header Controls */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white p-4 rounded-xl border border-slate-200 shadow-xs">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white p-6 rounded-2xl border border-neutral-200/60 shadow-[0_2px_10px_-3px_rgba(0,0,0,0.07)]">
         {/* Category Filters */}
-        <div className="flex items-center gap-1 overflow-x-auto pb-1 md:pb-0">
+        <div className="flex items-center gap-1.5 overflow-x-auto pb-1 md:pb-0">
           {categories.map((cat) => {
             const count = cat === 'All' 
               ? medicalFiles.length 
@@ -85,15 +85,15 @@ export const MedicalFilesPage: React.FC<MedicalFilesPageProps> = ({
                 key={cat}
                 id={`category-filter-${cat.toLowerCase().replace(/\s+/g, '-')}`}
                 onClick={() => setSelectedCategory(cat)}
-                className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all shrink-0 flex items-center gap-1.5 ${
+                className={`px-3.5 py-2 rounded-xl text-xs font-semibold transition-all shrink-0 flex items-center gap-2 cursor-pointer ${
                   isActive
-                    ? 'bg-blue-600 text-white shadow-xs'
-                    : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'
+                    ? 'bg-slate-900 text-white shadow-2xs'
+                    : 'text-slate-600 hover:bg-neutral-100/70 hover:text-slate-900'
                 }`}
               >
                 <span>{cat}</span>
                 <span className={`text-[10px] px-1.5 py-0.2 rounded-full font-bold ${
-                  isActive ? 'bg-white/20 text-white' : 'bg-slate-200 text-slate-700'
+                  isActive ? 'bg-white/20 text-white' : 'bg-neutral-200/70 text-slate-600'
                 }`}>
                   {count}
                 </span>
@@ -107,36 +107,36 @@ export const MedicalFilesPage: React.FC<MedicalFilesPageProps> = ({
           <button
             id="print-summary-batch-btn"
             onClick={() => setIsPrintBatchOpen(true)}
-            className="flex items-center justify-center gap-1.5 bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-semibold px-3.5 py-2 rounded-lg transition-colors border border-slate-300 shadow-xs cursor-pointer"
+            className="flex items-center justify-center gap-1.5 bg-neutral-100/80 hover:bg-neutral-200/80 text-slate-700 text-xs font-semibold px-4 py-2 rounded-xl transition-all border border-neutral-200/80 shadow-2xs cursor-pointer"
             title="Print Summary Report of Filtered Files"
           >
-            <Printer className="w-4 h-4 text-slate-700" />
+            <Printer className="w-4 h-4 text-slate-500" />
             <span>Print Batch Report</span>
           </button>
 
           <button
             id="upload-file-btn"
             onClick={onOpenNewFileModal}
-            className="flex items-center justify-center gap-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold px-4 py-2 rounded-lg transition-colors shadow-xs cursor-pointer"
+            className="flex items-center justify-center gap-1.5 bg-slate-900 hover:bg-black text-white text-xs font-semibold px-4 py-2 rounded-xl transition-all shadow-2xs cursor-pointer"
           >
             <Plus className="w-4 h-4" />
-            <span>+ Upload Medical File</span>
+            <span>Upload Medical File</span>
           </button>
         </div>
       </div>
 
       {/* Files Table */}
-      <div className="bg-white border border-slate-200 rounded-xl shadow-xs overflow-hidden">
+      <div className="bg-white border border-neutral-200/60 rounded-2xl shadow-[0_2px_10px_-3px_rgba(0,0,0,0.07)] overflow-hidden">
         <div className="overflow-x-auto">
           <table id="medical-files-table" className="w-full text-left text-xs border-collapse">
             <thead>
-              <tr className="bg-slate-50 border-b border-slate-200 text-slate-700 font-bold uppercase tracking-wider text-[11px]">
-                <th className="py-3.5 px-4">Patient Name</th>
-                <th className="py-3.5 px-4">File Title & Format</th>
-                <th className="py-3.5 px-4">Category</th>
-                <th className="py-3.5 px-4">Upload Date & Staff</th>
-                <th className="py-3.5 px-4 text-center">Reviewed Status</th>
-                <th className="py-3.5 px-4 text-right">Actions</th>
+              <tr className="bg-neutral-50/80 border-b border-neutral-200/60 text-slate-500 font-bold uppercase tracking-wider text-[10px]">
+                <th className="py-4 px-5">Patient Name</th>
+                <th className="py-4 px-5">File Title & Format</th>
+                <th className="py-4 px-5">Category</th>
+                <th className="py-4 px-5">Upload Date & Staff</th>
+                <th className="py-4 px-5 text-center">Reviewed Status</th>
+                <th className="py-4 px-5 text-right">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 text-slate-800 font-medium">
@@ -319,7 +319,7 @@ export const MedicalFilesPage: React.FC<MedicalFilesPageProps> = ({
                       setPreviewFile(null);
                       setPrintModalFile(fileToPrint);
                     }}
-                    className="px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg flex items-center gap-1.5 transition-colors cursor-pointer"
+                    className="px-3 py-2 bg-slate-900 hover:bg-black text-white font-semibold rounded-lg flex items-center gap-1.5 transition-colors cursor-pointer"
                   >
                     <Printer className="w-3.5 h-3.5" />
                     <span>Print Record</span>

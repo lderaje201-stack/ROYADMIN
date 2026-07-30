@@ -60,15 +60,15 @@ export const MedicalFilePrintModal: React.FC<MedicalFilePrintModalProps> = ({
       <div className="bg-slate-100 rounded-2xl shadow-2xl border border-slate-300 w-full max-w-4xl max-h-[92vh] flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-200 my-auto">
         
         {/* Top Control Bar (Hidden during actual print) */}
-        <div className="no-print bg-slate-900 text-white px-6 py-4 border-b border-slate-800 flex flex-wrap items-center justify-between gap-3 shrink-0">
+        <div className="no-print bg-slate-900 text-white px-6 py-5 border-b border-slate-800 flex flex-wrap items-center justify-between gap-3 shrink-0">
           <div className="flex items-center gap-3">
-            <div className="p-2 bg-blue-600/30 rounded-lg border border-blue-500/40 text-blue-400">
+            <div className="p-2 bg-slate-800 text-white rounded-xl border border-slate-700 shadow-xs">
               <Printer className="w-5 h-5" />
             </div>
             <div>
               <h3 className="text-sm font-bold tracking-tight text-white flex items-center gap-2">
                 <span>Print-Friendly Medical Record Preview</span>
-                <span className="text-[10px] bg-blue-500/20 text-blue-300 font-mono px-2 py-0.5 rounded border border-blue-500/30">
+                <span className="text-[10px] bg-slate-800 text-slate-300 font-mono px-2 py-0.5 rounded border border-slate-700">
                   A4 / Letter Format
                 </span>
               </h3>
@@ -78,11 +78,11 @@ export const MedicalFilePrintModal: React.FC<MedicalFilePrintModalProps> = ({
             </div>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2.5">
             <button
               id="print-download-pdf-btn"
               onClick={handleSimulatePDFDownload}
-              className="px-3 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-lg text-xs font-semibold border border-slate-700 transition-colors flex items-center gap-1.5 cursor-pointer"
+              className="px-3.5 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-xl text-xs font-semibold border border-slate-700 transition-colors flex items-center gap-1.5 cursor-pointer"
               title="Save as PDF"
             >
               <Download className="w-4 h-4" />
@@ -92,16 +92,16 @@ export const MedicalFilePrintModal: React.FC<MedicalFilePrintModalProps> = ({
             <button
               id="print-trigger-now-btn"
               onClick={handleTriggerPrint}
-              className="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-lg text-xs font-bold transition-all flex items-center gap-2 shadow-lg shadow-blue-600/30 cursor-pointer"
+              className="px-4 py-2.5 bg-white text-slate-900 hover:bg-slate-100 rounded-xl text-xs font-bold transition-all flex items-center gap-2 shadow-sm cursor-pointer"
             >
-              <Printer className="w-4 h-4" />
+              <Printer className="w-4 h-4 text-slate-900" />
               <span>Print Document</span>
             </button>
 
             <button
               id="print-close-modal-btn"
               onClick={onClose}
-              className="p-2 text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg transition-colors cursor-pointer"
+              className="p-2 text-slate-400 hover:text-white hover:bg-slate-800 rounded-xl transition-colors cursor-pointer"
               title="Close Print Preview"
             >
               <X className="w-5 h-5" />

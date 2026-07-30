@@ -287,7 +287,7 @@ export default function App() {
   const unreviewedFilesCount = medicalFiles.filter(f => !f.reviewed).length;
 
   return (
-    <div id="main-application-container" className="min-h-screen bg-slate-100 flex flex-col font-sans">
+    <div id="main-application-container" className="min-h-screen bg-[#fafafa] flex flex-col font-sans">
       {/* Toast Notification Layer */}
       <ToastContainer toasts={toasts} onDismiss={handleDismissToast} />
 
@@ -306,7 +306,7 @@ export default function App() {
         />
 
         {/* Main Container Layout */}
-        <div className={`flex-1 flex flex-col min-w-0 ${isSidebarCollapsed ? 'pl-16' : 'pl-64'} transition-all duration-300 ease-in-out`}>
+        <div className={`flex-1 flex flex-col min-w-0 ${isSidebarCollapsed ? 'pl-[68px]' : 'pl-[260px]'} transition-all duration-300 ease-in-out`}>
           {/* Top Header Bar */}
           <TopBar
             activeTab={activeTab}

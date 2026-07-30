@@ -47,31 +47,31 @@ export const OverviewPage: React.FC<OverviewPageProps> = ({
   const todayBookings = bookings.slice(0, 5);
 
   return (
-    <div id="overview-page" className="p-6 space-y-6">
-      {/* Welcome Banner */}
-      <div className="bg-gradient-to-r from-slate-900 via-slate-800 to-blue-950 text-white rounded-xl p-6 shadow-sm border border-slate-800 flex flex-col md:flex-row md:items-center justify-between gap-4">
+    <div id="overview-page" className="p-8 space-y-8 max-w-7xl mx-auto">
+      {/* Clean Light Welcome Header */}
+      <div className="bg-white border border-neutral-200/60 rounded-2xl p-6 shadow-[0_2px_10px_-3px_rgba(0,0,0,0.07)] flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div>
           <div className="flex items-center gap-2 mb-2">
-            <div className="inline-flex items-center gap-2 px-2.5 py-1 bg-blue-500/20 text-blue-300 rounded-full text-xs font-semibold border border-blue-400/20">
-              <Activity className="w-3.5 h-3.5 text-blue-400" />
-              <span>Royal Dental Admin Dashboard</span>
-            </div>
-            <div className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-emerald-500/20 text-emerald-300 rounded-full text-xs font-semibold border border-emerald-400/20">
-              <Building2 className="w-3.5 h-3.5 text-emerald-400" />
-              <span>Clinic Open: 09:00 - 21:00</span>
-            </div>
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 bg-neutral-100 text-neutral-800 rounded-full text-xs font-semibold border border-neutral-200/80">
+              <Activity className="w-3.5 h-3.5 text-neutral-700" />
+              Royal Dental Admin
+            </span>
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 bg-emerald-50 text-emerald-700 rounded-full text-xs font-semibold border border-emerald-200/60">
+              <Building2 className="w-3.5 h-3.5 text-emerald-600" />
+              Clinic Open: 09:00 - 21:00
+            </span>
           </div>
-          <h2 className="text-xl font-bold tracking-tight">Good day, Dr. Amira Al-Husseini</h2>
-          <p className="text-xs text-slate-300 mt-1 max-w-xl">
-            You have <span className="text-amber-300 font-semibold">{pendingBookings} pending booking requests</span> and <span className="text-blue-300 font-semibold">{unreadMessages} unread patient messages</span> waiting for staff review.
+          <h2 className="text-xl font-bold tracking-tight text-slate-900">Good day, Dr. Amira Al-Husseini</h2>
+          <p className="text-xs text-slate-500 mt-1 max-w-xl leading-relaxed">
+            You have <span className="text-rose-600 font-semibold">{pendingBookings} pending booking requests</span> and <span className="text-rose-600 font-semibold">{unreadMessages} unread patient messages</span> waiting for staff review.
           </p>
         </div>
 
-        <div className="flex items-center gap-2 shrink-0">
+        <div className="flex items-center gap-3 shrink-0">
           <button
             id="overview-new-booking-btn"
             onClick={onOpenNewBookingModal}
-            className="flex items-center gap-1.5 bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold px-4 py-2.5 rounded-lg transition-colors shadow-sm"
+            className="flex items-center gap-2 bg-slate-900 hover:bg-black text-white text-xs font-semibold px-4 py-2.5 rounded-xl transition-all shadow-2xs cursor-pointer"
           >
             <Plus className="w-4 h-4" />
             <span>New Appointment</span>
@@ -79,37 +79,37 @@ export const OverviewPage: React.FC<OverviewPageProps> = ({
           <button
             id="overview-new-patient-btn"
             onClick={onOpenNewPatientModal}
-            className="flex items-center gap-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold px-4 py-2.5 rounded-lg border border-slate-700 transition-colors"
+            className="flex items-center gap-2 bg-neutral-100/80 hover:bg-neutral-200/80 text-slate-700 text-xs font-semibold px-4 py-2.5 rounded-xl border border-neutral-200/80 transition-all cursor-pointer"
           >
-            <Users className="w-4 h-4 text-blue-400" />
+            <Users className="w-4 h-4 text-slate-500" />
             <span>Register Patient</span>
           </button>
         </div>
       </div>
 
-      {/* 4 SUMMARY CARDS (Strict prompt requirement) */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      {/* 4 Clean Stat Cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
         {/* Card 1: Pending Bookings */}
         <div 
           id="summary-card-pending-bookings"
           onClick={() => onNavigateTab('bookings')}
-          className="bg-white border border-slate-200 rounded-xl p-5 hover:border-amber-400 transition-all shadow-xs cursor-pointer group"
+          className="bg-white border border-neutral-200/60 rounded-2xl p-6 transition-all shadow-[0_2px_10px_-3px_rgba(0,0,0,0.07)] hover:shadow-[0_4px_16px_-2px_rgba(0,0,0,0.1)] cursor-pointer group"
         >
           <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-slate-500">Pending Bookings</span>
-            <div className="w-9 h-9 rounded-lg bg-amber-50 border border-amber-200 flex items-center justify-center text-amber-600 group-hover:scale-105 transition-transform">
-              <CalendarClock className="w-5 h-5" />
+            <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Pending Bookings</span>
+            <div className="w-8 h-8 rounded-xl bg-rose-50 border border-rose-200/60 flex items-center justify-center text-rose-600">
+              <CalendarClock className="w-4 h-4" />
             </div>
           </div>
-          <div className="mt-3 flex items-baseline justify-between">
+          <div className="mt-4 flex items-baseline justify-between">
             <span className="text-2xl font-bold text-slate-900">{pendingBookings}</span>
-            <span className="text-[11px] text-amber-700 bg-amber-50 px-2 py-0.5 rounded-md font-semibold border border-amber-200">
+            <span className="text-[11px] text-rose-700 bg-rose-50 px-2.5 py-0.5 rounded-full font-medium border border-rose-200/60">
               Needs confirmation
             </span>
           </div>
-          <div className="mt-3 pt-3 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-500 font-medium">
+          <div className="mt-4 pt-3 border-t border-neutral-100 flex items-center justify-between text-[11px] text-slate-500 font-medium">
             <span>View all bookings</span>
-            <ArrowUpRight className="w-3.5 h-3.5 text-slate-400 group-hover:text-amber-600 transition-colors" />
+            <ArrowUpRight className="w-3.5 h-3.5 text-slate-400 group-hover:text-rose-600 transition-colors" />
           </div>
         </div>
 
@@ -117,23 +117,23 @@ export const OverviewPage: React.FC<OverviewPageProps> = ({
         <div 
           id="summary-card-unread-messages"
           onClick={() => onNavigateTab('messages')}
-          className="bg-white border border-slate-200 rounded-xl p-5 hover:border-blue-400 transition-all shadow-xs cursor-pointer group"
+          className="bg-white border border-neutral-200/60 rounded-2xl p-6 transition-all shadow-[0_2px_10px_-3px_rgba(0,0,0,0.07)] hover:shadow-[0_4px_16px_-2px_rgba(0,0,0,0.1)] cursor-pointer group"
         >
           <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-slate-500">Unread Messages</span>
-            <div className="w-9 h-9 rounded-lg bg-blue-50 border border-blue-200 flex items-center justify-center text-blue-600 group-hover:scale-105 transition-transform">
-              <MessageSquare className="w-5 h-5" />
+            <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Unread Messages</span>
+            <div className="w-8 h-8 rounded-xl bg-rose-50 border border-rose-200/60 flex items-center justify-center text-rose-600">
+              <MessageSquare className="w-4 h-4" />
             </div>
           </div>
-          <div className="mt-3 flex items-baseline justify-between">
+          <div className="mt-4 flex items-baseline justify-between">
             <span className="text-2xl font-bold text-slate-900">{unreadMessages}</span>
-            <span className="text-[11px] text-blue-700 bg-blue-50 px-2 py-0.5 rounded-md font-semibold border border-blue-200">
+            <span className="text-[11px] text-rose-700 bg-rose-50 px-2.5 py-0.5 rounded-full font-medium border border-rose-200/60">
               Patient inquiries
             </span>
           </div>
-          <div className="mt-3 pt-3 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-500 font-medium">
+          <div className="mt-4 pt-3 border-t border-neutral-100 flex items-center justify-between text-[11px] text-slate-500 font-medium">
             <span>Open patient chat</span>
-            <ArrowUpRight className="w-3.5 h-3.5 text-slate-400 group-hover:text-blue-600 transition-colors" />
+            <ArrowUpRight className="w-3.5 h-3.5 text-slate-400 group-hover:text-rose-600 transition-colors" />
           </div>
         </div>
 
@@ -141,21 +141,21 @@ export const OverviewPage: React.FC<OverviewPageProps> = ({
         <div 
           id="summary-card-new-files"
           onClick={() => onNavigateTab('medical-files')}
-          className="bg-white border border-slate-200 rounded-xl p-5 hover:border-emerald-400 transition-all shadow-xs cursor-pointer group"
+          className="bg-white border border-neutral-200/60 rounded-2xl p-6 transition-all shadow-[0_2px_10px_-3px_rgba(0,0,0,0.07)] hover:shadow-[0_4px_16px_-2px_rgba(0,0,0,0.1)] cursor-pointer group"
         >
           <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-slate-500">New Files</span>
-            <div className="w-9 h-9 rounded-lg bg-emerald-50 border border-emerald-200 flex items-center justify-center text-emerald-600 group-hover:scale-105 transition-transform">
-              <FileText className="w-5 h-5" />
+            <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">New Files</span>
+            <div className="w-8 h-8 rounded-xl bg-emerald-50 border border-emerald-200/60 flex items-center justify-center text-emerald-600">
+              <FileText className="w-4 h-4" />
             </div>
           </div>
-          <div className="mt-3 flex items-baseline justify-between">
+          <div className="mt-4 flex items-baseline justify-between">
             <span className="text-2xl font-bold text-slate-900">{unreviewedFiles}</span>
-            <span className="text-[11px] text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md font-semibold border border-emerald-200">
+            <span className="text-[11px] text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded-full font-medium border border-emerald-200/60">
               Pending review
             </span>
           </div>
-          <div className="mt-3 pt-3 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-500 font-medium">
+          <div className="mt-4 pt-3 border-t border-neutral-100 flex items-center justify-between text-[11px] text-slate-500 font-medium">
             <span>Review diagnostic files</span>
             <ArrowUpRight className="w-3.5 h-3.5 text-slate-400 group-hover:text-emerald-600 transition-colors" />
           </div>
@@ -165,23 +165,23 @@ export const OverviewPage: React.FC<OverviewPageProps> = ({
         <div 
           id="summary-card-total-patients"
           onClick={() => onNavigateTab('patients')}
-          className="bg-white border border-slate-200 rounded-xl p-5 hover:border-indigo-400 transition-all shadow-xs cursor-pointer group"
+          className="bg-white border border-neutral-200/60 rounded-2xl p-6 transition-all shadow-[0_2px_10px_-3px_rgba(0,0,0,0.07)] hover:shadow-[0_4px_16px_-2px_rgba(0,0,0,0.1)] cursor-pointer group"
         >
           <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-slate-500">Total Patients</span>
-            <div className="w-9 h-9 rounded-lg bg-indigo-50 border border-indigo-200 flex items-center justify-center text-indigo-600 group-hover:scale-105 transition-transform">
-              <Users className="w-5 h-5" />
+            <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Total Patients</span>
+            <div className="w-8 h-8 rounded-xl bg-neutral-100 border border-neutral-200/60 flex items-center justify-center text-slate-700">
+              <Users className="w-4 h-4" />
             </div>
           </div>
-          <div className="mt-3 flex items-baseline justify-between">
+          <div className="mt-4 flex items-baseline justify-between">
             <span className="text-2xl font-bold text-slate-900">{totalPatientsCount}</span>
-            <span className="text-[11px] text-indigo-700 bg-indigo-50 px-2 py-0.5 rounded-md font-semibold border border-indigo-200 flex items-center gap-1">
+            <span className="text-[11px] text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded-full font-medium border border-emerald-200/60 flex items-center gap-1">
               <TrendingUp className="w-3 h-3" /> +14% growth
             </span>
           </div>
-          <div className="mt-3 pt-3 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-500 font-medium">
+          <div className="mt-4 pt-3 border-t border-neutral-100 flex items-center justify-between text-[11px] text-slate-500 font-medium">
             <span>Access directory</span>
-            <ArrowUpRight className="w-3.5 h-3.5 text-slate-400 group-hover:text-indigo-600 transition-colors" />
+            <ArrowUpRight className="w-3.5 h-3.5 text-slate-400 group-hover:text-slate-800 transition-colors" />
           </div>
         </div>
       </div>
@@ -189,39 +189,39 @@ export const OverviewPage: React.FC<OverviewPageProps> = ({
       {/* Main Grid: Upcoming Schedule & Activity Feed */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Left Column: Today's Appointments Timeline */}
-        <div className="lg:col-span-2 bg-white border border-slate-200 rounded-xl p-5 shadow-xs">
-          <div className="flex items-center justify-between pb-4 border-b border-slate-100">
+        <div className="lg:col-span-2 bg-white border border-neutral-200/60 rounded-2xl p-6 shadow-[0_2px_10px_-3px_rgba(0,0,0,0.07)]">
+          <div className="flex items-center justify-between pb-4 border-b border-neutral-100">
             <div>
               <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2">
-                <Clock className="w-4 h-4 text-blue-600" />
+                <Clock className="w-4 h-4 text-slate-700" />
                 <span>Today's Upcoming Appointments</span>
               </h3>
-              <p className="text-xs text-slate-500">Real-time schedule for clinic suites</p>
+              <p className="text-xs text-slate-500 mt-0.5">Real-time schedule for clinic suites</p>
             </div>
             <button
               onClick={() => onNavigateTab('bookings')}
-              className="text-xs font-semibold text-blue-600 hover:text-blue-800 flex items-center gap-1"
+              className="text-xs font-semibold text-slate-800 hover:text-black flex items-center gap-1 cursor-pointer"
             >
               <span>View full schedule</span>
               <ChevronRight className="w-3.5 h-3.5" />
             </button>
           </div>
 
-          <div className="mt-4 space-y-3">
+          <div className="mt-5 space-y-3">
             {todayBookings.map((b) => (
               <div 
                 key={b.id}
-                className="flex items-center justify-between p-3.5 bg-slate-50 border border-slate-200 rounded-lg hover:bg-blue-50/40 hover:border-blue-200 transition-all"
+                className="flex items-center justify-between p-4 bg-slate-50/70 border border-slate-200/60 rounded-xl hover:bg-slate-50 transition-all"
               >
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-3.5">
                   {b.patientAvatar ? (
                     <img
                       src={b.patientAvatar}
                       alt={b.patientName}
-                      className="w-10 h-10 rounded-full object-cover border border-slate-300"
+                      className="w-9 h-9 rounded-full object-cover border border-slate-200"
                     />
                   ) : (
-                    <div className="w-10 h-10 rounded-full bg-slate-200 text-slate-700 font-bold flex items-center justify-center text-xs">
+                    <div className="w-9 h-9 rounded-full bg-slate-200/80 text-slate-700 font-bold flex items-center justify-center text-xs">
                       {b.patientName.charAt(0)}
                     </div>
                   )}
@@ -229,32 +229,32 @@ export const OverviewPage: React.FC<OverviewPageProps> = ({
                   <div>
                     <div className="flex items-center gap-2">
                       <span className="text-xs font-bold text-slate-900">{b.patientName}</span>
-                      <span className="text-[10px] text-slate-500 bg-slate-200/60 px-1.5 py-0.5 rounded">
+                      <span className="text-[10px] text-slate-500 bg-slate-200/60 px-1.5 py-0.5 rounded font-medium">
                         {b.roomNumber}
                       </span>
                     </div>
-                    <div className="text-[11px] text-slate-600 font-medium">{b.service}</div>
-                    <div className="text-[10px] text-slate-400 mt-0.5">With {b.doctorName}</div>
+                    <div className="text-[11px] text-slate-600 font-medium mt-0.5">{b.service}</div>
+                    <div className="text-[10px] text-slate-400">With {b.doctorName}</div>
                   </div>
                 </div>
 
                 <div className="text-right">
-                  <div className="text-xs font-bold text-slate-900 bg-white px-2.5 py-1 rounded border border-slate-200 inline-block">
+                  <div className="text-xs font-bold text-slate-800 bg-white px-2.5 py-1 rounded-lg border border-slate-200/80 inline-block shadow-2xs">
                     {b.time}
                   </div>
                   <div className="mt-1">
                     {b.status === 'Pending' && (
-                      <span className="text-[10px] bg-amber-100 text-amber-800 font-semibold px-2 py-0.5 rounded-full border border-amber-300">
+                      <span className="text-[10px] bg-amber-50 text-amber-700 font-medium px-2 py-0.5 rounded-full border border-amber-200/60">
                         Pending
                       </span>
                     )}
                     {b.status === 'Confirmed' && (
-                      <span className="text-[10px] bg-emerald-100 text-emerald-800 font-semibold px-2 py-0.5 rounded-full border border-emerald-300">
+                      <span className="text-[10px] bg-emerald-50 text-emerald-700 font-medium px-2 py-0.5 rounded-full border border-emerald-200/60">
                         Confirmed
                       </span>
                     )}
                     {b.status === 'Completed' && (
-                      <span className="text-[10px] bg-blue-100 text-blue-800 font-semibold px-2 py-0.5 rounded-full border border-blue-300">
+                      <span className="text-[10px] bg-blue-50 text-blue-700 font-medium px-2 py-0.5 rounded-full border border-blue-200/60">
                         Completed
                       </span>
                     )}
@@ -268,57 +268,57 @@ export const OverviewPage: React.FC<OverviewPageProps> = ({
         {/* Right Column: Activity Feed & Quick Controls */}
         <div className="space-y-6">
           {/* Quick Staff Actions Card */}
-          <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-xs">
-            <h3 className="text-sm font-bold text-slate-900 mb-3">Quick Staff Shortcuts</h3>
-            <div className="grid grid-cols-2 gap-2">
+          <div className="bg-white border border-neutral-200/60 rounded-2xl p-6 shadow-[0_2px_10px_-3px_rgba(0,0,0,0.07)]">
+            <h3 className="text-sm font-bold text-slate-900 mb-4">Quick Staff Shortcuts</h3>
+            <div className="grid grid-cols-2 gap-2.5">
               <button
                 onClick={onOpenNewBookingModal}
-                className="p-3 bg-slate-50 hover:bg-blue-50 hover:border-blue-300 border border-slate-200 rounded-lg text-left transition-colors group"
+                className="p-3.5 bg-slate-50/80 hover:bg-slate-100/80 border border-slate-200/60 rounded-xl text-left transition-all group cursor-pointer"
               >
-                <CalendarClock className="w-4 h-4 text-blue-600 mb-1" />
-                <div className="text-xs font-bold text-slate-800 group-hover:text-blue-900">Book Patient</div>
+                <CalendarClock className="w-4 h-4 text-blue-600 mb-1.5" />
+                <div className="text-xs font-bold text-slate-800 group-hover:text-blue-700">Book Patient</div>
                 <div className="text-[10px] text-slate-500">Add appointment</div>
               </button>
 
               <button
                 onClick={onOpenNewPatientModal}
-                className="p-3 bg-slate-50 hover:bg-blue-50 hover:border-blue-300 border border-slate-200 rounded-lg text-left transition-colors group"
+                className="p-3.5 bg-slate-50/80 hover:bg-slate-100/80 border border-slate-200/60 rounded-xl text-left transition-all group cursor-pointer"
               >
-                <Users className="w-4 h-4 text-indigo-600 mb-1" />
-                <div className="text-xs font-bold text-slate-800 group-hover:text-blue-900">Add Patient</div>
+                <Users className="w-4 h-4 text-indigo-600 mb-1.5" />
+                <div className="text-xs font-bold text-slate-800 group-hover:text-indigo-700">Add Patient</div>
                 <div className="text-[10px] text-slate-500">New chart profile</div>
               </button>
 
               <button
                 onClick={onOpenNewFileModal}
-                className="p-3 bg-slate-50 hover:bg-blue-50 hover:border-blue-300 border border-slate-200 rounded-lg text-left transition-colors group"
+                className="p-3.5 bg-slate-50/80 hover:bg-slate-100/80 border border-slate-200/60 rounded-xl text-left transition-all group cursor-pointer"
               >
-                <FileText className="w-4 h-4 text-emerald-600 mb-1" />
-                <div className="text-xs font-bold text-slate-800 group-hover:text-blue-900">Upload File</div>
+                <FileText className="w-4 h-4 text-emerald-600 mb-1.5" />
+                <div className="text-xs font-bold text-slate-800 group-hover:text-emerald-700">Upload File</div>
                 <div className="text-[10px] text-slate-500">X-Ray / 3D Scan</div>
               </button>
 
               <button
                 onClick={() => onNavigateTab('team-members')}
-                className="p-3 bg-slate-50 hover:bg-blue-50 hover:border-blue-300 border border-slate-200 rounded-lg text-left transition-colors group"
+                className="p-3.5 bg-slate-50/80 hover:bg-slate-100/80 border border-slate-200/60 rounded-xl text-left transition-all group cursor-pointer"
               >
-                <Stethoscope className="w-4 h-4 text-purple-600 mb-1" />
-                <div className="text-xs font-bold text-slate-800 group-hover:text-blue-900">Doctor Roster</div>
+                <Stethoscope className="w-4 h-4 text-purple-600 mb-1.5" />
+                <div className="text-xs font-bold text-slate-800 group-hover:text-purple-700">Doctor Roster</div>
                 <div className="text-[10px] text-slate-500">Manage specialists</div>
               </button>
             </div>
           </div>
 
           {/* Activity Log */}
-          <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-xs">
-            <h3 className="text-sm font-bold text-slate-900 mb-3">Recent Clinic Log</h3>
-            <div className="space-y-3">
+          <div className="bg-white border border-neutral-200/60 rounded-2xl p-6 shadow-[0_2px_10px_-3px_rgba(0,0,0,0.07)]">
+            <h3 className="text-sm font-bold text-slate-900 mb-4">Recent Clinic Log</h3>
+            <div className="space-y-3.5">
               {activities.map((act) => (
                 <div key={act.id} className="flex items-start gap-3 text-xs">
-                  <div className="w-2 h-2 rounded-full bg-blue-600 mt-1.5 shrink-0" />
+                  <div className="w-2 h-2 rounded-full bg-slate-900 mt-1.5 shrink-0" />
                   <div className="min-w-0 flex-1">
                     <div className="font-semibold text-slate-900">{act.title}</div>
-                    <div className="text-[11px] text-slate-600 leading-snug">{act.description}</div>
+                    <div className="text-[11px] text-slate-500 leading-snug">{act.description}</div>
                     <div className="text-[10px] text-slate-400 mt-0.5">{act.timestamp}</div>
                   </div>
                 </div>

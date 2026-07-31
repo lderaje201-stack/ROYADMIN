@@ -54,7 +54,7 @@ export const TeamMemberModal: React.FC<TeamMemberModalProps> = ({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     onSave({
-      id: editingMember ? editingMember.id : `DOC-${Math.floor(10 + Math.random() * 90)}`,
+      id: editingMember ? editingMember.id : '',
       name,
       role,
       specialty,

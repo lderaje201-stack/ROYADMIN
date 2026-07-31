@@ -42,7 +42,7 @@ export const LogoutModal: React.FC<LogoutModalProps> = ({
               className="w-12 h-12 rounded-full object-cover border-2 border-white shadow-2xs"
             />
             <div>
-              <div className="text-sm font-bold text-slate-900">Dr. Amira Al-Husseini</div>
+              <div className="text-sm font-bold text-slate-900">Administrator</div>
               <div className="text-xs text-slate-500">Medical Administrator</div>
               <div className="text-[10px] text-emerald-600 font-semibold mt-0.5">Session Active • Suite Admin</div>
             </div>

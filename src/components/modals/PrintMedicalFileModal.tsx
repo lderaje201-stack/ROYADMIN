@@ -424,7 +424,7 @@ export const PrintMedicalFileModal: React.FC<PrintMedicalFileModalProps> = ({
                   <div className="space-y-1">
                     <div className="h-10 border-b border-dashed border-slate-400 flex items-end pb-1">
                       <span className="font-serif italic text-sm text-slate-800 font-bold tracking-wider">
-                        Dr. Amira Al-Husseini, BDS, MSc
+                        Administrator, BDS, MSc
                       </span>
                     </div>
                     <div className="text-[11px] font-bold text-slate-900">Attending Dental Surgeon & Administrator</div>

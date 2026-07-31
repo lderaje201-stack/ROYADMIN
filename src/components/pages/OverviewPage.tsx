@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import { supabase } from '../../lib/supabase';
 import { Booking, Conversation, MedicalFile, Patient, NavigationTab, ActivityItem } from '../../types';
 import { 
   CalendarClock, 
@@ -17,6 +18,7 @@ import {
 } from 'lucide-react';
 
 interface OverviewPageProps {
+  adminProfile?: any;
   bookings: Booking[];
   conversations: Conversation[];
   medicalFiles: MedicalFile[];
@@ -29,6 +31,7 @@ interface OverviewPageProps {
 }
 
 export const OverviewPage: React.FC<OverviewPageProps> = ({
+  adminProfile,
   bookings,
   conversations,
   medicalFiles,
@@ -39,10 +42,43 @@ export const OverviewPage: React.FC<OverviewPageProps> = ({
   onOpenNewPatientModal,
   onOpenNewFileModal
 }) => {
-  const pendingBookings = bookings.filter(b => b.status === 'Pending').length;
-  const unreadMessages = conversations.reduce((acc, c) => acc + c.unreadCount, 0);
-  const unreviewedFiles = medicalFiles.filter(f => !f.reviewed).length;
-  const totalPatientsCount = patients.length;
+  const [counts, setCounts] = useState({ 
+    pendingBookings: 0, 
+    unreadMessages: 0, 
+    unreviewedFiles: 0, 
+    totalPatientsCount: 0 
+  });
+
+  useEffect(() => {
+    async function fetchCounts() {
+      try {
+        const [
+          { count: pb },
+          { count: um },
+          { count: uf },
+          { count: tp }
+        ] = await Promise.all([
+          supabase.from('bookings').select('*', { count: 'exact', head: true }).eq('status', 'Pending'),
+          supabase.from('messages').select('*', { count: 'exact', head: true }),
+          supabase.from('medical_files').select('*', { count: 'exact', head: true }),
+          supabase.from('profiles').select('*', { count: 'exact', head: true })
+        ]);
+        
+        setCounts({
+          pendingBookings: pb || 0,
+          unreadMessages: um || 0,
+          unreviewedFiles: uf || 0,
+          totalPatientsCount: tp || 0
+        });
+      } catch (err) {
+        console.error('Error fetching overview counts:', err);
+      }
+    }
+    fetchCounts();
+  }, []);
+
+  const { pendingBookings, unreadMessages, unreviewedFiles, totalPatientsCount } = counts;
+
 
   const todayBookings = bookings.slice(0, 5);
 
@@ -61,7 +97,7 @@ export const OverviewPage: React.FC<OverviewPageProps> = ({
               Clinic Open: 09:00 - 21:00
             </span>
           </div>
-          <h2 className="text-xl font-bold tracking-tight text-slate-900">Good day, Dr. Amira Al-Husseini</h2>
+          <h2 className="text-xl font-bold tracking-tight text-slate-900">Good day, {adminProfile?.name || 'Administrator'}</h2>
           <p className="text-xs text-slate-500 mt-1 max-w-xl leading-relaxed">
             You have <span className="text-rose-600 font-semibold">{pendingBookings} pending booking requests</span> and <span className="text-rose-600 font-semibold">{unreadMessages} unread patient messages</span> waiting for staff review.
           </p>

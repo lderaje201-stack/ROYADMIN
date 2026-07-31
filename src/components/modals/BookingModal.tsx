@@ -43,7 +43,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     onSave({
-      patientId: selectedPatientId || `PT-${Math.floor(1000 + Math.random() * 9000)}`,
+      patientId: selectedPatientId || 'new_patient',
       patientName: patientNameInput,
       patientPhone: patientPhoneInput,
       service,

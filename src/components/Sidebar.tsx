@@ -18,6 +18,7 @@ import {
 } from 'lucide-react';
 
 interface SidebarProps {
+  adminProfile?: any;
   activeTab: NavigationTab;
   setActiveTab: (tab: NavigationTab) => void;
   pendingBookingsCount: number;
@@ -29,6 +30,7 @@ interface SidebarProps {
 }
 
 export const Sidebar: React.FC<SidebarProps> = ({
+  adminProfile,
   activeTab,
   setActiveTab,
   pendingBookingsCount,
@@ -264,7 +266,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
               />
               <div className="flex flex-col min-w-0 flex-1">
                 <span className="text-xs font-semibold text-slate-900 truncate">
-                  Dr. Amira Al-Husseini
+                  {adminProfile?.name || 'Administrator'}
                 </span>
                 <span className="text-[10px] text-slate-500 truncate">
                   Medical Administrator
@@ -290,7 +292,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 className="w-8 h-8 rounded-full object-cover border border-slate-200 cursor-pointer"
               />
               <div className="absolute left-full ml-3 px-3 py-1.5 bg-slate-900 text-slate-100 text-xs font-medium rounded-xl shadow-xl whitespace-nowrap z-50 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-150 top-1/2 -translate-y-1/2">
-                Dr. Amira Al-Husseini
+                {adminProfile?.name || 'Administrator'}
               </div>
             </div>
 

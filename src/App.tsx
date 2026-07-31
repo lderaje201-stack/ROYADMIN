@@ -21,13 +21,13 @@ import {
   getAllMedicalFiles, 
   getAllPatients, 
   getAllTeamMembers, 
-  getAllActivities 
+  getAllActivities,
+  getAdminProfile, createBooking, updateBookingStatus, rescheduleBooking, sendMessage, toggleFileReviewed, createMedicalFile, createPatient, saveTeamMember, toggleTeamPublished, createActivity
 } from './lib/supabase';
 
 import { Sidebar } from './components/Sidebar';
 import { TopBar } from './components/TopBar';
 import { ToastContainer } from './components/ToastContainer';
-
 import { OverviewPage } from './components/pages/OverviewPage';
 import { BookingsPage } from './components/pages/BookingsPage';
 import { MessagesPage } from './components/pages/MessagesPage';
@@ -37,7 +37,6 @@ import { TeamMembersPage } from './components/pages/TeamMembersPage';
 import { ReviewsPage } from './components/pages/ReviewsPage';
 import { AnalyticsPage } from './components/pages/AnalyticsPage';
 import { SettingsPage } from './components/pages/SettingsPage';
-
 import { BookingModal } from './components/modals/BookingModal';
 import { PatientModal } from './components/modals/PatientModal';
 import { MedicalFileModal } from './components/modals/MedicalFileModal';
@@ -57,20 +56,22 @@ export default function App() {
   const [patients, setPatients] = useState<Patient[]>([]);
   const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);
   const [activities, setActivities] = useState<ActivityItem[]>([]);
+  const [adminProfile, setAdminProfile] = useState<TeamMember | null>(null);
 
   useEffect(() => {
     async function loadData() {
       setIsLoading(true);
       try {
         const [
-          b, c, f, p, tm, a
+          b, c, f, p, tm, a, admin
         ] = await Promise.all([
           getAllBookings(),
           getAllConversations(),
           getAllMedicalFiles(),
           getAllPatients(),
           getAllTeamMembers(),
-          getAllActivities()
+          getAllActivities(),
+          getAdminProfile()
         ]);
         setBookings(b);
         setConversations(c);
@@ -78,6 +79,7 @@ export default function App() {
         setPatients(p);
         setTeamMembers(tm);
         setActivities(a);
+        setAdminProfile(admin);
       } catch (err) {
         console.error('Error loading initial data:', err);
       } finally {
@@ -86,6 +88,8 @@ export default function App() {
     }
     loadData();
   }, []);
+
+
   const [toasts, setToasts] = useState<Toast[]>([]);
 
   // Modal Control States
@@ -139,7 +143,7 @@ export default function App() {
   };
 
   // State Updates & Action Handlers
-  const handleUpdateBookingStatus = (bookingId: string, status: BookingStatus) => {
+  const handleUpdateBookingStatus = async (bookingId: string, status: BookingStatus) => {
     setBookings(prev => prev.map(b => b.id === bookingId ? { ...b, status } : b));
     const target = bookings.find(b => b.id === bookingId);
     
@@ -161,7 +165,7 @@ export default function App() {
     ]);
   };
 
-  const handleRescheduleBooking = (bookingId: string, newDate: string, newTime?: string) => {
+  const handleRescheduleBooking = async (bookingId: string, newDate: string, newTime?: string) => {
     let patientName = '';
     setBookings(prev => prev.map(b => {
       if (b.id === bookingId) {
@@ -192,44 +196,26 @@ export default function App() {
     ]);
   };
 
-  const handleSendMessage = (conversationId: string, text: string) => {
-    const now = new Date();
-    const timeStr = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-
-    setConversations(prev => prev.map(c => {
-      if (c.id === conversationId) {
-        const newMsg = {
-          id: `M-${Date.now()}`,
-          sender: 'staff' as const,
-          senderName: 'Dr. Amira Al-Husseini',
-          text,
-          timestamp: timeStr
-        };
-        return {
-          ...c,
-          lastMessage: text,
-          lastTimestamp: timeStr,
-          messages: [...c.messages, newMsg]
-        };
-      }
-      return c;
-    }));
-
-    addToast('success', 'Reply sent to patient conversation thread.');
+  const handleSendMessage = async (conversationId: string, text: string) => {
+    const success = await sendMessage(conversationId, text, 'Admin');
+    if (success) {
+      addToast('success', 'Reply sent.');
+      const c = await getAllConversations(); setConversations(c);
+    } else {
+      addToast('error', 'Failed to send message');
+    }
   };
 
-  const handleToggleFileReviewed = (fileId: string) => {
-    setMedicalFiles(prev => prev.map(f => {
-      if (f.id === fileId) {
-        const updated = !f.reviewed;
-        addToast(
-          updated ? 'success' : 'info',
-          `Medical file ${f.fileTitle} set to ${updated ? 'Reviewed' : 'Pending Review'}.`
-        );
-        return { ...f, reviewed: updated };
-      }
-      return f;
-    }));
+  const handleToggleFileReviewed = async (fileId: string) => {
+    const file = medicalFiles.find(f => f.id === fileId);
+    if (!file) return;
+    const success = await toggleFileReviewed(fileId, !file.reviewed);
+    if (success) {
+      addToast('success', `Medical file status updated.`);
+      const f = await getAllMedicalFiles(); setMedicalFiles(f);
+    } else {
+      addToast('error', 'Failed to update file');
+    }
   };
 
   const handleConfirmResetPassword = (patientId: string, method: 'email' | 'temp-password') => {
@@ -242,57 +228,49 @@ export default function App() {
     );
   };
 
-  const handleToggleTeamPublished = (id: string) => {
-    setTeamMembers(prev => prev.map(m => {
-      if (m.id === id) {
-        const updated = !m.published;
-        addToast(
-          updated ? 'success' : 'info',
-          `${m.name}'s profile is now ${updated ? 'Published on website' : 'Draft mode'}.`
-        );
-        return { ...m, published: updated };
-      }
-      return m;
-    }));
+  const handleToggleTeamPublished = async (id: string) => {
+    const member = teamMembers.find(m => m.id === id);
+    if (!member) return;
+    const success = await toggleTeamPublished(id, !member.published);
+    if (success) {
+      addToast('success', `Team member status updated.`);
+      const tm = await getAllTeamMembers(); setTeamMembers(tm);
+    } else {
+      addToast('error', 'Failed to update member');
+    }
   };
 
-  const handleCreateBooking = (bookingData: Omit<Booking, 'id' | 'createdAt'>) => {
-    const newId = `BK-${Math.floor(1000 + Math.random() * 9000)}`;
-    const newBooking: Booking = {
-      ...bookingData,
-      id: newId,
-      createdAt: 'Just now'
-    };
-    setBookings(prev => [newBooking, ...prev]);
-    addToast('success', `Appointment ${newId} scheduled for ${newBooking.patientName}.`);
+  const handleCreateBooking = async (bookingData: Omit<Booking, 'id' | 'createdAt'>) => {
+    const newBooking = await createBooking(bookingData);
+    if (newBooking) {
+      addToast('success', `Appointment scheduled.`);
+      const b = await getAllBookings(); setBookings(b);
+    } else {
+      addToast('error', 'Failed to create booking');
+    }
   };
 
-  const handleCreatePatient = (patientData: Omit<Patient, 'id' | 'registeredDate' | 'totalVisits' | 'lastVisit' | 'balance'>) => {
-    const newId = `PT-${Math.floor(8800 + Math.random() * 99)}`;
-    const newPatient: Patient = {
-      ...patientData,
-      id: newId,
-      registeredDate: new Date().toISOString().split('T')[0],
-      lastVisit: 'Today (New)',
-      totalVisits: 1,
-      balance: 0
-    };
-    setPatients(prev => [newPatient, ...prev]);
-    addToast('success', `Patient chart registered for ${newPatient.name} (${newId}).`);
+  const handleCreatePatient = async (patientData: Omit<Patient, 'id' | 'registeredDate' | 'totalVisits' | 'lastVisit' | 'balance'>) => {
+    const newPatient = await createPatient(patientData);
+    if (newPatient) {
+      addToast('success', `Patient registered.`);
+      const p = await getAllPatients(); setPatients(p);
+    } else {
+      addToast('error', 'Failed to register patient');
+    }
   };
 
-  const handleCreateMedicalFile = (fileData: Omit<MedicalFile, 'id' | 'uploadDate'>) => {
-    const newId = `FILE-${Math.floor(300 + Math.random() * 99)}`;
-    const newFile: MedicalFile = {
-      ...fileData,
-      id: newId,
-      uploadDate: new Date().toISOString().split('T')[0]
-    };
-    setMedicalFiles(prev => [newFile, ...prev]);
-    addToast('success', `Medical record ${newFile.fileTitle} uploaded.`);
+  const handleCreateMedicalFile = async (fileData: Omit<MedicalFile, 'id' | 'uploadDate'>) => {
+    const newFile = await createMedicalFile(fileData);
+    if (newFile) {
+      addToast('success', `Medical record uploaded.`);
+      const f = await getAllMedicalFiles(); setMedicalFiles(f);
+    } else {
+      addToast('error', 'Failed to upload medical record');
+    }
   };
 
-  const handleSaveTeamMember = (member: TeamMember) => {
+  const handleSaveTeamMember = async (member: TeamMember) => {
     setTeamMembers(prev => {
       const exists = prev.some(m => m.id === member.id);
       if (exists) {
@@ -306,7 +284,7 @@ export default function App() {
   const handleConfirmLogout = () => {
     setIsLogoutModalOpen(false);
     setActiveTab('overview');
-    addToast('info', 'Signed out of Royal Dental Staff Admin session. Re-authenticated as Dr. Amira Al-Husseini.');
+    addToast('info', 'Signed out of Royal Dental Staff Admin session. Re-authenticated as Administrator.');
   };
 
   // Counters for badges
@@ -323,6 +301,7 @@ export default function App() {
       <div id="admin-app-root" className="flex-1 text-slate-800 flex relative min-h-screen">
         {/* Fixed Left Sidebar */}
         <Sidebar
+          adminProfile={adminProfile}
           activeTab={activeTab}
           setActiveTab={setActiveTab}
           pendingBookingsCount={pendingBookingsCount}
@@ -361,6 +340,7 @@ export default function App() {
           <main className={`flex-1 ${activeTab === 'messages' ? 'overflow-hidden flex flex-col h-screen' : 'overflow-y-auto'}`}>
             {activeTab === 'overview' && (
               <OverviewPage
+                adminProfile={adminProfile}
                 bookings={bookings}
                 conversations={conversations}
                 medicalFiles={medicalFiles}
@@ -447,6 +427,7 @@ export default function App() {
 
             {activeTab === 'settings' && (
               <SettingsPage
+                adminProfile={adminProfile}
                 onSaveSettings={(msg) => addToast('success', msg)}
               />
             )}

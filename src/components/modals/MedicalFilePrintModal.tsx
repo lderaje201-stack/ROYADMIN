@@ -230,7 +230,7 @@ export const MedicalFilePrintModal: React.FC<MedicalFilePrintModalProps> = ({
                   </div>
                   <div>
                     <span className="text-[10px] uppercase font-bold text-slate-500 block">Primary Attending</span>
-                    <span className="font-semibold text-slate-800">{file ? file.uploadedBy : (patient?.assignedDoctor || 'Dr. Amira Al-Husseini')}</span>
+                    <span className="font-semibold text-slate-800">{file ? file.uploadedBy : (patient?.assignedDoctor || 'Administrator')}</span>
                   </div>
                   <div>
                     <span className="text-[10px] uppercase font-bold text-slate-500 block">Review Status</span>
@@ -373,7 +373,7 @@ export const MedicalFilePrintModal: React.FC<MedicalFilePrintModalProps> = ({
                 {includeSignature && (
                   <div className="text-right">
                     <div className="font-serif italic text-lg text-slate-900 mb-1 font-bold tracking-wide">
-                      Dr. Amira Al-Husseini
+                      Administrator
                     </div>
                     <div className="border-t border-slate-800 pt-1 text-xs font-bold text-slate-900 uppercase">
                       Attending Radiologist / Clinic Director

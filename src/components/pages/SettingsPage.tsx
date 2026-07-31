@@ -15,11 +15,13 @@ import {
 } from 'lucide-react';
 
 interface SettingsPageProps {
+  adminProfile?: any;
   onSaveSettings: (msg: string) => void;
 }
 
-export const SettingsPage: React.FC<SettingsPageProps> = ({ onSaveSettings }) => {
-  const [adminName, setAdminName] = useState('Dr. Amira Al-Husseini');
+export const SettingsPage: React.FC<SettingsPageProps> = ({
+  adminProfile, onSaveSettings }) => {
+  const [adminName, setAdminName] = useState(adminProfile?.name || 'Administrator');
   const [adminEmail, setAdminEmail] = useState('amira.husseini@royaldental.com');
   const [adminRole, setAdminRole] = useState('Chief Medical Administrator');
 

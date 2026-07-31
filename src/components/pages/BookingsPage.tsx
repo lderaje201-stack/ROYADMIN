@@ -37,8 +37,8 @@ export const BookingsPage: React.FC<BookingsPageProps> = ({
   // View mode: 'month' (default), 'week', or 'list'
   const [viewMode, setViewMode] = useState<'month' | 'week' | 'list'>('month');
 
-  // Current calendar navigation date (Default anchor to July 2026 for mock data)
-  const [currentDate, setCurrentDate] = useState<Date>(new Date(2026, 6, 29)); // July 29, 2026
+  // Current calendar navigation date
+  const [currentDate, setCurrentDate] = useState<Date>(new Date());
 
   // Filters
   const [selectedStatusFilter, setSelectedStatusFilter] = useState<string>('All');

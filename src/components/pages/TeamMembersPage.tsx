@@ -91,13 +91,20 @@ export const TeamMembersPage: React.FC<TeamMembersPageProps> = ({
 
       {/* Grid View */}
       {viewMode === 'grid' && (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredMembers.map((member) => (
-            <div
-              key={member.id}
-              id={`team-card-${member.id}`}
-              className="bg-white border border-neutral-200/60 rounded-2xl overflow-hidden shadow-[0_2px_10px_-3px_rgba(0,0,0,0.07)] transition-all flex flex-col justify-between"
-            >
+        filteredMembers.length === 0 ? (
+          <div className="text-center py-12 bg-white border border-dashed border-slate-200 rounded-2xl">
+            <Stethoscope className="w-8 h-8 text-slate-300 mx-auto mb-3" />
+            <h3 className="text-sm font-bold text-slate-900">No team members found</h3>
+            <p className="text-xs text-slate-500 mt-1">Add a new doctor or specialist to the roster.</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {filteredMembers.map((member) => (
+              <div
+                key={member.id}
+                id={`team-card-${member.id}`}
+                className="bg-white border border-neutral-200/60 rounded-2xl overflow-hidden shadow-[0_2px_10px_-3px_rgba(0,0,0,0.07)] transition-all flex flex-col justify-between"
+              >
               <div className="p-5 space-y-4">
                 {/* Top Profile Header */}
                 <div className="flex items-start gap-3">
@@ -176,6 +183,7 @@ export const TeamMembersPage: React.FC<TeamMembersPageProps> = ({
             </div>
           ))}
         </div>
+        )
       )}
 
       {/* Table View */}
@@ -193,11 +201,20 @@ export const TeamMembersPage: React.FC<TeamMembersPageProps> = ({
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 text-slate-800 font-medium">
-                {filteredMembers.map((m) => (
-                  <tr key={m.id} className="hover:bg-slate-50/80 transition-colors">
-                    <td className="py-3.5 px-4">
-                      <div className="flex items-center gap-3">
-                        <img
+                {filteredMembers.length === 0 ? (
+                  <tr>
+                    <td colSpan={5} className="py-12 text-center">
+                      <Stethoscope className="w-8 h-8 text-slate-300 mx-auto mb-3" />
+                      <h3 className="text-sm font-bold text-slate-900">No team members found</h3>
+                      <p className="text-xs text-slate-500 mt-1">Add a new doctor or specialist to the roster.</p>
+                    </td>
+                  </tr>
+                ) : (
+                  filteredMembers.map((m) => (
+                    <tr key={m.id} className="hover:bg-slate-50/80 transition-colors">
+                      <td className="py-3.5 px-4">
+                        <div className="flex items-center gap-3">
+                          <img
                           src={m.photoUrl}
                           alt={m.name}
                           className="w-10 h-10 rounded-lg object-cover border border-slate-200 shrink-0"
@@ -242,7 +259,8 @@ export const TeamMembersPage: React.FC<TeamMembersPageProps> = ({
                       </button>
                     </td>
                   </tr>
-                ))}
+                ))
+              )}
               </tbody>
             </table>
           </div>

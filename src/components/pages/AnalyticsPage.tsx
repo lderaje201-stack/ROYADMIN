@@ -54,53 +54,6 @@ export const AnalyticsPage: React.FC<AnalyticsPageProps> = ({
     try {
       const fetchedReviews = await getAllReviews();
       setReviews(fetchedReviews);
-
-      if (isSupabaseConfigured) {
-        // Fetch real bookings from Supabase if available
-        const { data: bData } = await supabase
-          .from('bookings')
-          .select('*')
-          .order('created_at', { ascending: true });
-        if (bData && bData.length > 0) {
-          const mappedBookings: Booking[] = bData.map((b: any) => ({
-            id: b.id,
-            patientId: b.patient_id || b.user_id || 'PT-100',
-            patientName: b.patient_name || b.user_name || 'Patient',
-            patientPhone: b.patient_phone || '',
-            service: b.service_type || b.service || 'General Dental',
-            doctorName: b.doctor_name || 'Doctor',
-            date: b.date || (b.created_at ? b.created_at.split('T')[0] : '2026-07-29'),
-            time: b.time || '10:00 AM',
-            roomNumber: b.room_number || 'Room 1',
-            status: b.status || 'Confirmed',
-            createdAt: b.created_at || new Date().toISOString()
-          }));
-          setBookings(mappedBookings);
-        }
-
-        // Fetch real profiles/patients from Supabase if available
-        const { data: pData } = await supabase
-          .from('profiles')
-          .select('*')
-          .order('created_at', { ascending: true });
-        if (pData && pData.length > 0) {
-          const mappedPatients: Patient[] = pData.map((p: any) => ({
-            id: p.id,
-            name: p.full_name || p.name || 'Patient',
-            email: p.email || '',
-            phone: p.phone || '',
-            registeredDate: p.created_at ? p.created_at.split('T')[0] : '2026-07-01',
-            gender: p.gender || 'Other',
-            age: p.age || 30,
-            lastVisit: p.last_visit || '2026-07-28',
-            totalVisits: p.total_visits || 1,
-            assignedDoctor: p.assigned_doctor || 'Dr. Faisal Al-Sabah',
-            status: 'Active',
-            balance: 0
-          }));
-          setPatients(mappedPatients);
-        }
-      }
     } catch (e) {
       console.warn('Analytics data fetch exception:', e);
     } finally {
@@ -109,6 +62,8 @@ export const AnalyticsPage: React.FC<AnalyticsPageProps> = ({
   };
 
   useEffect(() => {
+    setBookings(initialBookings);
+    setPatients(initialPatients);
     loadData();
   }, [initialBookings, initialPatients]);
 

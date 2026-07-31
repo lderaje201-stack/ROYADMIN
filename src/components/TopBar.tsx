@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { NavigationTab } from '../types';
+import { NavigationTab, Patient, Booking, MedicalFile, TeamMember } from '../types';
 import { 
   Bell, 
   Search, 
@@ -26,12 +26,6 @@ import {
   promptPWAInstall, 
   subscribeOnlineStatus 
 } from '../pwaManager';
-import { 
-  INITIAL_PATIENTS, 
-  INITIAL_BOOKINGS, 
-  INITIAL_MEDICAL_FILES, 
-  INITIAL_TEAM_MEMBERS 
-} from '../mockData';
 
 interface TopBarProps {
   activeTab: NavigationTab;
@@ -46,6 +40,10 @@ interface TopBarProps {
   setSearchQuery: (query: string) => void;
   isSidebarCollapsed?: boolean;
   onToggleSidebar?: () => void;
+  patients: Patient[];
+  bookings: Booking[];
+  medicalFiles: MedicalFile[];
+  teamMembers: TeamMember[];
 }
 
 export const TopBar: React.FC<TopBarProps> = ({
@@ -60,7 +58,11 @@ export const TopBar: React.FC<TopBarProps> = ({
   searchQuery,
   setSearchQuery,
   isSidebarCollapsed = false,
-  onToggleSidebar
+  onToggleSidebar,
+  patients,
+  bookings,
+  medicalFiles,
+  teamMembers
 }) => {
   const [showNotifications, setShowNotifications] = useState(false);
   const [showQuickAddMenu, setShowQuickAddMenu] = useState(false);
@@ -146,14 +148,14 @@ export const TopBar: React.FC<TopBarProps> = ({
   // Live Spotlight Search Results
   const trimmedSearch = searchQuery.trim().toLowerCase();
 
-  const filteredPatients = INITIAL_PATIENTS.filter(p => 
+  const filteredPatients = patients.filter(p => 
     !trimmedSearch || 
     p.name.toLowerCase().includes(trimmedSearch) || 
     p.phone.includes(trimmedSearch) || 
     p.id.toLowerCase().includes(trimmedSearch)
   );
 
-  const filteredBookings = INITIAL_BOOKINGS.filter(b => 
+  const filteredBookings = bookings.filter(b => 
     !trimmedSearch || 
     b.patientName.toLowerCase().includes(trimmedSearch) || 
     b.service.toLowerCase().includes(trimmedSearch) || 
@@ -161,14 +163,14 @@ export const TopBar: React.FC<TopBarProps> = ({
     b.id.toLowerCase().includes(trimmedSearch)
   );
 
-  const filteredDoctors = INITIAL_TEAM_MEMBERS.filter(d => 
+  const filteredDoctors = teamMembers.filter(d => 
     !trimmedSearch || 
     d.name.toLowerCase().includes(trimmedSearch) || 
     d.specialty.toLowerCase().includes(trimmedSearch) || 
     d.role.toLowerCase().includes(trimmedSearch)
   );
 
-  const filteredFiles = INITIAL_MEDICAL_FILES.filter(f => 
+  const filteredFiles = medicalFiles.filter(f => 
     !trimmedSearch || 
     f.fileTitle.toLowerCase().includes(trimmedSearch) || 
     f.patientName.toLowerCase().includes(trimmedSearch) || 
@@ -187,13 +189,13 @@ export const TopBar: React.FC<TopBarProps> = ({
       {/* Seamless Completely Transparent Navigation Header */}
       <header 
         id="admin-topbar" 
-        className="h-16 bg-transparent px-6 flex items-center justify-between sticky top-0 z-20 pointer-events-auto"
+        className="h-16 bg-transparent px-6 flex items-center justify-between sticky top-0 z-20 pointer-events-none"
       >
         {/* Left Side spacer */}
-        <div className="flex items-center gap-2" />
+        <div className="flex items-center gap-2 pointer-events-auto" />
 
         {/* Right Controls: Full Spotlight Search trigger, Plus (+), Notifications, PWA */}
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3 pointer-events-auto">
           {/* Offline Mode Indicator */}
           {!isOnline && (
             <div 

@@ -208,60 +208,64 @@ export const OverviewPage: React.FC<OverviewPageProps> = ({
           </div>
 
           <div className="mt-5 space-y-3">
-            {todayBookings.map((b) => (
-              <div 
-                key={b.id}
-                className="flex items-center justify-between p-4 bg-slate-50/70 border border-slate-200/60 rounded-xl hover:bg-slate-50 transition-all"
-              >
-                <div className="flex items-center gap-3.5">
-                  {b.patientAvatar ? (
-                    <img
-                      src={b.patientAvatar}
-                      alt={b.patientName}
-                      className="w-9 h-9 rounded-full object-cover border border-slate-200"
-                    />
-                  ) : (
-                    <div className="w-9 h-9 rounded-full bg-slate-200/80 text-slate-700 font-bold flex items-center justify-center text-xs">
-                      {b.patientName.charAt(0)}
-                    </div>
-                  )}
-
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <span className="text-xs font-bold text-slate-900">{b.patientName}</span>
-                      <span className="text-[10px] text-slate-500 bg-slate-200/60 px-1.5 py-0.5 rounded font-medium">
-                        {b.roomNumber}
-                      </span>
-                    </div>
-                    <div className="text-[11px] text-slate-600 font-medium mt-0.5">{b.service}</div>
-                    <div className="text-[10px] text-slate-400">With {b.doctorName}</div>
-                  </div>
-                </div>
-
-                <div className="text-right">
-                  <div className="text-xs font-bold text-slate-800 bg-white px-2.5 py-1 rounded-lg border border-slate-200/80 inline-block shadow-2xs">
-                    {b.time}
-                  </div>
-                  <div className="mt-1">
-                    {b.status === 'Pending' && (
-                      <span className="text-[10px] bg-amber-50 text-amber-700 font-medium px-2 py-0.5 rounded-full border border-amber-200/60">
-                        Pending
-                      </span>
-                    )}
-                    {b.status === 'Confirmed' && (
-                      <span className="text-[10px] bg-emerald-50 text-emerald-700 font-medium px-2 py-0.5 rounded-full border border-emerald-200/60">
-                        Confirmed
-                      </span>
-                    )}
-                    {b.status === 'Completed' && (
-                      <span className="text-[10px] bg-blue-50 text-blue-700 font-medium px-2 py-0.5 rounded-full border border-blue-200/60">
-                        Completed
-                      </span>
-                    )}
-                  </div>
-                </div>
+            {todayBookings.length === 0 ? (
+              <div className="text-center py-6 bg-slate-50 border border-dashed border-slate-200 rounded-xl">
+                <p className="text-xs text-slate-500 font-medium">No upcoming appointments scheduled for today.</p>
               </div>
-            ))}
+            ) : (
+              todayBookings.map((b) => (
+                <div 
+                  key={b.id}
+                  className="flex items-center justify-between p-4 bg-slate-50/70 border border-slate-200/60 rounded-xl hover:bg-slate-50 transition-all"
+                >
+                  <div className="flex items-center gap-3.5">
+                    {b.patientAvatar ? (
+                      <img
+                        src={b.patientAvatar}
+                        alt={b.patientName}
+                        className="w-9 h-9 rounded-full object-cover border border-slate-200"
+                      />
+                    ) : (
+                      <div className="w-9 h-9 rounded-full bg-slate-200/80 text-slate-700 font-bold flex items-center justify-center text-xs">
+                        {b.patientName.charAt(0)}
+                      </div>
+                    )}
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs font-bold text-slate-900">{b.patientName}</span>
+                        <span className="text-[10px] text-slate-500 bg-slate-200/60 px-1.5 py-0.5 rounded font-medium">
+                          {b.roomNumber}
+                        </span>
+                      </div>
+                      <div className="text-[11px] text-slate-600 font-medium mt-0.5">{b.service}</div>
+                      <div className="text-[10px] text-slate-400">With {b.doctorName}</div>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <div className="text-xs font-bold text-slate-800 bg-white px-2.5 py-1 rounded-lg border border-slate-200/80 inline-block shadow-2xs">
+                      {b.time}
+                    </div>
+                    <div className="mt-1">
+                      {b.status === 'Pending' && (
+                        <span className="text-[10px] bg-amber-50 text-amber-700 font-medium px-2 py-0.5 rounded-full border border-amber-200/60">
+                          Pending
+                        </span>
+                      )}
+                      {b.status === 'Confirmed' && (
+                        <span className="text-[10px] bg-emerald-50 text-emerald-700 font-medium px-2 py-0.5 rounded-full border border-emerald-200/60">
+                          Confirmed
+                        </span>
+                      )}
+                      {b.status === 'Completed' && (
+                        <span className="text-[10px] bg-blue-50 text-blue-700 font-medium px-2 py-0.5 rounded-full border border-blue-200/60">
+                          Completed
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              ))
+            )}
           </div>
         </div>
 
@@ -313,16 +317,22 @@ export const OverviewPage: React.FC<OverviewPageProps> = ({
           <div className="bg-white border border-neutral-200/60 rounded-2xl p-6 shadow-[0_2px_10px_-3px_rgba(0,0,0,0.07)]">
             <h3 className="text-sm font-bold text-slate-900 mb-4">Recent Clinic Log</h3>
             <div className="space-y-3.5">
-              {activities.map((act) => (
-                <div key={act.id} className="flex items-start gap-3 text-xs">
-                  <div className="w-2 h-2 rounded-full bg-slate-900 mt-1.5 shrink-0" />
-                  <div className="min-w-0 flex-1">
-                    <div className="font-semibold text-slate-900">{act.title}</div>
-                    <div className="text-[11px] text-slate-500 leading-snug">{act.description}</div>
-                    <div className="text-[10px] text-slate-400 mt-0.5">{act.timestamp}</div>
-                  </div>
+              {activities.length === 0 ? (
+                <div className="text-center py-4 bg-slate-50 border border-dashed border-slate-200 rounded-xl">
+                  <p className="text-[11px] text-slate-500 font-medium">No recent clinic activity.</p>
                 </div>
-              ))}
+              ) : (
+                activities.map((act) => (
+                  <div key={act.id} className="flex items-start gap-3 text-xs">
+                    <div className="w-2 h-2 rounded-full bg-slate-900 mt-1.5 shrink-0" />
+                    <div className="min-w-0 flex-1">
+                      <div className="font-semibold text-slate-900">{act.title}</div>
+                      <div className="text-[11px] text-slate-500 leading-snug">{act.description}</div>
+                      <div className="text-[10px] text-slate-400 mt-0.5">{act.timestamp}</div>
+                    </div>
+                  </div>
+                ))
+              )}
             </div>
           </div>
         </div>

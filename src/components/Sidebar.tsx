@@ -280,11 +280,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
               <LogOut className="w-3.5 h-3.5" />
               <span>Sign Out</span>
             </button>
-
-            <div className="mt-2 text-[10px] text-slate-400 text-center font-medium flex items-center justify-center gap-1.5">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
-              <span>ROYADMIN PWA • Offline Capable</span>
-            </div>
           </>
         ) : (
           <div className="flex flex-col items-center gap-2 py-1">

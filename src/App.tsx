@@ -16,13 +16,13 @@ import {
   BookingStatus 
 } from './types';
 import { 
-  INITIAL_BOOKINGS, 
-  INITIAL_CONVERSATIONS, 
-  INITIAL_MEDICAL_FILES, 
-  INITIAL_PATIENTS, 
-  INITIAL_TEAM_MEMBERS, 
-  INITIAL_ACTIVITIES 
-} from './mockData';
+  getAllBookings, 
+  getAllConversations, 
+  getAllMedicalFiles, 
+  getAllPatients, 
+  getAllTeamMembers, 
+  getAllActivities 
+} from './lib/supabase';
 
 import { Sidebar } from './components/Sidebar';
 import { TopBar } from './components/TopBar';
@@ -48,16 +48,44 @@ import { LogoutModal } from './components/modals/LogoutModal';
 export default function App() {
   const [activeTab, setActiveTab] = useState<NavigationTab>('overview');
   const [searchQuery, setSearchQuery] = useState('');
+  const [isLoading, setIsLoading] = useState(true);
 
-  // Local State powered by Mock Data (Phase 1 layout pass)
-  const [bookings, setBookings] = useState<Booking[]>(INITIAL_BOOKINGS);
-  const [conversations, setConversations] = useState<Conversation[]>(INITIAL_CONVERSATIONS);
-  const [medicalFiles, setMedicalFiles] = useState<MedicalFile[]>(INITIAL_MEDICAL_FILES);
-  const [patients, setPatients] = useState<Patient[]>(INITIAL_PATIENTS);
-  const [teamMembers, setTeamMembers] = useState<TeamMember[]>(INITIAL_TEAM_MEMBERS);
-  const [activities, setActivities] = useState<ActivityItem[]>(INITIAL_ACTIVITIES);
+  // Local State powered by real Supabase data
+  const [bookings, setBookings] = useState<Booking[]>([]);
+  const [conversations, setConversations] = useState<Conversation[]>([]);
+  const [medicalFiles, setMedicalFiles] = useState<MedicalFile[]>([]);
+  const [patients, setPatients] = useState<Patient[]>([]);
+  const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);
+  const [activities, setActivities] = useState<ActivityItem[]>([]);
 
-  // Notifications State
+  useEffect(() => {
+    async function loadData() {
+      setIsLoading(true);
+      try {
+        const [
+          b, c, f, p, tm, a
+        ] = await Promise.all([
+          getAllBookings(),
+          getAllConversations(),
+          getAllMedicalFiles(),
+          getAllPatients(),
+          getAllTeamMembers(),
+          getAllActivities()
+        ]);
+        setBookings(b);
+        setConversations(c);
+        setMedicalFiles(f);
+        setPatients(p);
+        setTeamMembers(tm);
+        setActivities(a);
+      } catch (err) {
+        console.error('Error loading initial data:', err);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+    loadData();
+  }, []);
   const [toasts, setToasts] = useState<Toast[]>([]);
 
   // Modal Control States
@@ -306,25 +334,31 @@ export default function App() {
         />
 
         {/* Main Container Layout */}
-        <div className={`flex-1 flex flex-col min-w-0 ${isSidebarCollapsed ? 'pl-[68px]' : 'pl-[260px]'} transition-all duration-300 ease-in-out`}>
+        <div className={`flex-1 flex flex-col min-w-0 ${isSidebarCollapsed ? 'pl-[68px]' : 'pl-[260px]'} transition-all duration-300 ease-in-out relative h-screen`}>
           {/* Top Header Bar */}
-          <TopBar
-            activeTab={activeTab}
-            pendingBookingsCount={pendingBookingsCount}
-            unreadMessagesCount={unreadMessagesCount}
-            onOpenNewBookingModal={() => setIsBookingModalOpen(true)}
-            onOpenNewPatientModal={() => setIsPatientModalOpen(true)}
-            onOpenNewMedicalFileModal={() => setIsMedicalFileModalOpen(true)}
-            onOpenNewTeamModal={() => setIsTeamModalOpen(true)}
-            onNavigateTab={setActiveTab}
-            searchQuery={searchQuery}
-            setSearchQuery={setSearchQuery}
-            isSidebarCollapsed={isSidebarCollapsed}
-            onToggleSidebar={handleToggleSidebar}
-          />
+          <div className={activeTab === 'messages' ? 'absolute top-0 right-0 left-0 z-30 pointer-events-none' : ''}>
+            <TopBar
+              activeTab={activeTab}
+              pendingBookingsCount={pendingBookingsCount}
+              unreadMessagesCount={unreadMessagesCount}
+              onOpenNewBookingModal={() => setIsBookingModalOpen(true)}
+              onOpenNewPatientModal={() => setIsPatientModalOpen(true)}
+              onOpenNewMedicalFileModal={() => setIsMedicalFileModalOpen(true)}
+              onOpenNewTeamModal={() => setIsTeamModalOpen(true)}
+              onNavigateTab={setActiveTab}
+              searchQuery={searchQuery}
+              setSearchQuery={setSearchQuery}
+              isSidebarCollapsed={isSidebarCollapsed}
+              onToggleSidebar={handleToggleSidebar}
+              patients={patients}
+              bookings={bookings}
+              medicalFiles={medicalFiles}
+              teamMembers={teamMembers}
+            />
+          </div>
 
           {/* Dynamic Main Content Area */}
-          <main className="flex-1 overflow-y-auto">
+          <main className={`flex-1 ${activeTab === 'messages' ? 'overflow-hidden flex flex-col h-screen' : 'overflow-y-auto'}`}>
             {activeTab === 'overview' && (
               <OverviewPage
                 bookings={bookings}
@@ -352,9 +386,11 @@ export default function App() {
             {activeTab === 'messages' && (
               <MessagesPage
                 conversations={conversations}
+                patients={patients}
                 onSendMessage={handleSendMessage}
                 searchQuery={searchQuery}
                 onShowToast={(type, msg) => addToast(type, msg)}
+                onNavigateTab={setActiveTab}
               />
             )}
 

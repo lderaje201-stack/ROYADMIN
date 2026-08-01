@@ -115,6 +115,16 @@ export interface ActivityItem {
   icon?: string;
 }
 
+export interface AdminProfile {
+  id: string;
+  email: string;
+  full_name: string;
+  name: string;
+  avatar_url?: string;
+  role: string;
+  phone?: string;
+}
+
 export interface Toast {
   id: string;
   type: 'success' | 'info' | 'warning' | 'error';

@@ -260,16 +260,16 @@ export const Sidebar: React.FC<SidebarProps> = ({
           <>
             <div className="flex items-center gap-2.5 p-2 rounded-2xl bg-white border border-slate-200/60 shadow-2xs mb-2">
               <img
-                src="https://images.unsplash.com/photo-1559839734-2b71ea197ec2?w=100&auto=format&fit=crop&q=80"
-                alt="Logged in Staff"
+                src={adminProfile?.avatar_url || adminProfile?.photoUrl || "https://images.unsplash.com/photo-1559839734-2b71ea197ec2?w=100&auto=format&fit=crop&q=80"}
+                alt={adminProfile?.full_name || adminProfile?.name || "Logged in Staff"}
                 className="w-8 h-8 rounded-full object-cover border border-slate-200 shrink-0"
               />
               <div className="flex flex-col min-w-0 flex-1">
                 <span className="text-xs font-semibold text-slate-900 truncate">
-                  {adminProfile?.name || 'Administrator'}
+                  {adminProfile?.full_name || adminProfile?.name || 'Administrator'}
                 </span>
-                <span className="text-[10px] text-slate-500 truncate">
-                  Medical Administrator
+                <span className="text-[10px] text-slate-500 capitalize truncate">
+                  {adminProfile?.role ? `${adminProfile.role} Account` : 'Medical Administrator'}
                 </span>
               </div>
             </div>
@@ -287,12 +287,12 @@ export const Sidebar: React.FC<SidebarProps> = ({
           <div className="flex flex-col items-center gap-2 py-1">
             <div className="relative group">
               <img
-                src="https://images.unsplash.com/photo-1559839734-2b71ea197ec2?w=100&auto=format&fit=crop&q=80"
-                alt="Logged in Staff"
+                src={adminProfile?.avatar_url || adminProfile?.photoUrl || "https://images.unsplash.com/photo-1559839734-2b71ea197ec2?w=100&auto=format&fit=crop&q=80"}
+                alt={adminProfile?.full_name || adminProfile?.name || "Logged in Staff"}
                 className="w-8 h-8 rounded-full object-cover border border-slate-200 cursor-pointer"
               />
               <div className="absolute left-full ml-3 px-3 py-1.5 bg-slate-900 text-slate-100 text-xs font-medium rounded-xl shadow-xl whitespace-nowrap z-50 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-150 top-1/2 -translate-y-1/2">
-                {adminProfile?.name || 'Administrator'}
+                {adminProfile?.full_name || adminProfile?.name || 'Administrator'}
               </div>
             </div>
 

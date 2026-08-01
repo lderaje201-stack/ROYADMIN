@@ -3,12 +3,14 @@ import { LogOut, X, ShieldAlert } from 'lucide-react';
 
 interface LogoutModalProps {
   isOpen: boolean;
+  adminProfile?: any;
   onClose: () => void;
   onConfirmLogout: () => void;
 }
 
 export const LogoutModal: React.FC<LogoutModalProps> = ({
   isOpen,
+  adminProfile,
   onClose,
   onConfirmLogout
 }) => {
@@ -37,14 +39,20 @@ export const LogoutModal: React.FC<LogoutModalProps> = ({
         <div className="p-6 space-y-5">
           <div className="flex items-center gap-3.5 p-3.5 bg-neutral-50/60 border border-neutral-200/60 rounded-xl">
             <img
-              src="https://images.unsplash.com/photo-1559839734-2b71ea197ec2?w=100&auto=format&fit=crop&q=80"
+              src={adminProfile?.avatar_url || adminProfile?.photoUrl || "https://images.unsplash.com/photo-1559839734-2b71ea197ec2?w=100&auto=format&fit=crop&q=80"}
               alt="Logged in Staff"
-              className="w-12 h-12 rounded-full object-cover border-2 border-white shadow-2xs"
+              className="w-12 h-12 rounded-full object-cover border-2 border-white shadow-2xs shrink-0"
             />
-            <div>
-              <div className="text-sm font-bold text-slate-900">Administrator</div>
-              <div className="text-xs text-slate-500">Medical Administrator</div>
-              <div className="text-[10px] text-emerald-600 font-semibold mt-0.5">Session Active • Suite Admin</div>
+            <div className="min-w-0 flex-1">
+              <div className="text-sm font-bold text-slate-900 truncate">
+                {adminProfile?.full_name || adminProfile?.name || 'Administrator'}
+              </div>
+              <div className="text-xs text-slate-500 truncate">
+                {adminProfile?.email || 'Medical Administrator'}
+              </div>
+              <div className="text-[10px] text-emerald-600 font-semibold mt-0.5">
+                Session Active • Admin Role Verified
+              </div>
             </div>
           </div>
 

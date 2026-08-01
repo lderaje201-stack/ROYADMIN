@@ -22,9 +22,14 @@ import {
   getAllPatients, 
   getAllTeamMembers, 
   getAllActivities,
-  getAdminProfile, createBooking, updateBookingStatus, rescheduleBooking, sendMessage, toggleFileReviewed, createMedicalFile, createPatient, saveTeamMember, toggleTeamPublished, createActivity
+  createBooking, updateBookingStatus, rescheduleBooking, sendMessage, toggleFileReviewed, createMedicalFile, createPatient, saveTeamMember, toggleTeamPublished, createActivity,
+  getAuthenticatedAdminUser,
+  signOutAdmin,
+  supabase
 } from './lib/supabase';
 
+import { LoginPage } from './components/auth/LoginPage';
+import { UnauthorizedPage } from './components/auth/UnauthorizedPage';
 import { Sidebar } from './components/Sidebar';
 import { TopBar } from './components/TopBar';
 import { ToastContainer } from './components/ToastContainer';
@@ -49,6 +54,13 @@ export default function App() {
   const [searchQuery, setSearchQuery] = useState('');
   const [isLoading, setIsLoading] = useState(true);
 
+  // Auth & RBAC State
+  const [isAuthChecking, setIsAuthChecking] = useState(true);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isAuthorizedAdmin, setIsAuthorizedAdmin] = useState(false);
+  const [adminProfile, setAdminProfile] = useState<any>(null);
+  const [userEmail, setUserEmail] = useState<string>('');
+
   // Local State powered by real Supabase data
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [conversations, setConversations] = useState<Conversation[]>([]);
@@ -56,37 +68,81 @@ export default function App() {
   const [patients, setPatients] = useState<Patient[]>([]);
   const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);
   const [activities, setActivities] = useState<ActivityItem[]>([]);
-  const [adminProfile, setAdminProfile] = useState<TeamMember | null>(null);
+
+  const loadClinicData = async () => {
+    setIsLoading(true);
+    try {
+      const [
+        b, c, f, p, tm, a
+      ] = await Promise.all([
+        getAllBookings(),
+        getAllConversations(),
+        getAllMedicalFiles(),
+        getAllPatients(),
+        getAllTeamMembers(),
+        getAllActivities()
+      ]);
+      setBookings(b);
+      setConversations(c);
+      setMedicalFiles(f);
+      setPatients(p);
+      setTeamMembers(tm);
+      setActivities(a);
+    } catch (err) {
+      console.error('Error loading clinic data:', err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const verifyAuthAndLoadData = async () => {
+    setIsAuthChecking(true);
+    try {
+      const authRes = await getAuthenticatedAdminUser();
+      if (authRes.session && authRes.isAdmin && authRes.profile) {
+        setIsAuthenticated(true);
+        setIsAuthorizedAdmin(true);
+        setAdminProfile(authRes.profile);
+        setUserEmail(authRes.profile.email);
+        await loadClinicData();
+      } else if (authRes.session) {
+        setIsAuthenticated(true);
+        setIsAuthorizedAdmin(false);
+        setAdminProfile(authRes.profile);
+        setUserEmail(authRes.session.user?.email || authRes.profile?.email || '');
+      } else {
+        setIsAuthenticated(false);
+        setIsAuthorizedAdmin(false);
+        setAdminProfile(null);
+        setUserEmail('');
+      }
+    } catch (err) {
+      console.error('Auth verification error:', err);
+      setIsAuthenticated(false);
+      setIsAuthorizedAdmin(false);
+    } finally {
+      setIsAuthChecking(false);
+    }
+  };
 
   useEffect(() => {
-    async function loadData() {
-      setIsLoading(true);
-      try {
-        const [
-          b, c, f, p, tm, a, admin
-        ] = await Promise.all([
-          getAllBookings(),
-          getAllConversations(),
-          getAllMedicalFiles(),
-          getAllPatients(),
-          getAllTeamMembers(),
-          getAllActivities(),
-          getAdminProfile()
-        ]);
-        setBookings(b);
-        setConversations(c);
-        setMedicalFiles(f);
-        setPatients(p);
-        setTeamMembers(tm);
-        setActivities(a);
-        setAdminProfile(admin);
-      } catch (err) {
-        console.error('Error loading initial data:', err);
-      } finally {
-        setIsLoading(false);
+    verifyAuthAndLoadData();
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (!session) {
+        setIsAuthenticated(false);
+        setIsAuthorizedAdmin(false);
+        setAdminProfile(null);
+        setUserEmail('');
+        setIsAuthChecking(false);
+      } else {
+        verifyAuthAndLoadData();
       }
-    }
-    loadData();
+    });
+
+    return () => {
+      subscription.unsubscribe();
+    };
   }, []);
 
 
@@ -144,56 +200,48 @@ export default function App() {
 
   // State Updates & Action Handlers
   const handleUpdateBookingStatus = async (bookingId: string, status: BookingStatus) => {
-    setBookings(prev => prev.map(b => b.id === bookingId ? { ...b, status } : b));
     const target = bookings.find(b => b.id === bookingId);
-    
-    addToast(
-      status === 'Confirmed' ? 'success' : 'warning',
-      `Booking ${bookingId} for ${target?.patientName || 'patient'} marked as ${status}.`
-    );
-
-    // Log activity
-    setActivities(prev => [
-      {
-        id: `ACT-${Date.now()}`,
+    const success = await updateBookingStatus(bookingId, status);
+    if (success) {
+      addToast(
+        status === 'Confirmed' ? 'success' : 'warning',
+        `Booking ${bookingId} for ${target?.patientName || 'patient'} marked as ${status}.`
+      );
+      await createActivity({
         title: `Booking ${status}`,
-        description: `Appointment for ${target?.patientName} was updated to ${status}`,
-        timestamp: 'Just now',
-        type: 'booking'
-      },
-      ...prev
-    ]);
+        description: `Appointment for ${target?.patientName || 'patient'} was updated to ${status}`,
+        type: 'booking',
+        icon: 'Calendar'
+      });
+      const [b, a] = await Promise.all([getAllBookings(), getAllActivities()]);
+      setBookings(b);
+      setActivities(a);
+    } else {
+      addToast('error', `Failed to update status for booking ${bookingId}`);
+    }
   };
 
   const handleRescheduleBooking = async (bookingId: string, newDate: string, newTime?: string) => {
-    let patientName = '';
-    setBookings(prev => prev.map(b => {
-      if (b.id === bookingId) {
-        patientName = b.patientName;
-        return {
-          ...b,
-          date: newDate,
-          time: newTime || b.time
-        };
-      }
-      return b;
-    }));
-
-    addToast(
-      'success',
-      `Appointment ${bookingId} for ${patientName} rescheduled to ${newDate}${newTime ? ' (' + newTime + ')' : ''}.`
-    );
-
-    setActivities(prev => [
-      {
-        id: `ACT-${Date.now()}`,
+    const target = bookings.find(b => b.id === bookingId);
+    const timeToSet = newTime || target?.time || '09:00 AM';
+    const success = await rescheduleBooking(bookingId, newDate, timeToSet);
+    if (success) {
+      addToast(
+        'success',
+        `Appointment ${bookingId} for ${target?.patientName || 'patient'} rescheduled to ${newDate}${newTime ? ' (' + newTime + ')' : ''}.`
+      );
+      await createActivity({
         title: 'Booking Rescheduled',
-        description: `Appointment for ${patientName} moved to ${newDate}${newTime ? ' at ' + newTime : ''}`,
-        timestamp: 'Just now',
-        type: 'booking'
-      },
-      ...prev
-    ]);
+        description: `Appointment for ${target?.patientName || 'patient'} moved to ${newDate}${newTime ? ' at ' + newTime : ''}`,
+        type: 'booking',
+        icon: 'Calendar'
+      });
+      const [b, a] = await Promise.all([getAllBookings(), getAllActivities()]);
+      setBookings(b);
+      setActivities(a);
+    } else {
+      addToast('error', `Failed to reschedule booking ${bookingId}`);
+    }
   };
 
   const handleSendMessage = async (conversationId: string, text: string) => {
@@ -271,21 +319,65 @@ export default function App() {
   };
 
   const handleSaveTeamMember = async (member: TeamMember) => {
-    setTeamMembers(prev => {
-      const exists = prev.some(m => m.id === member.id);
-      if (exists) {
-        return prev.map(m => m.id === member.id ? member : m);
-      }
-      return [...prev, member];
-    });
-    addToast('success', `Doctor profile for ${member.name} updated successfully.`);
+    const success = await saveTeamMember(member);
+    if (success) {
+      addToast('success', `Doctor profile for ${member.name} saved successfully.`);
+      const tm = await getAllTeamMembers();
+      setTeamMembers(tm);
+    } else {
+      addToast('error', `Failed to save doctor profile for ${member.name}.`);
+    }
   };
 
-  const handleConfirmLogout = () => {
+  const handleConfirmLogout = async () => {
+    await signOutAdmin();
     setIsLogoutModalOpen(false);
-    setActiveTab('overview');
-    addToast('info', 'Signed out of Royal Dental Staff Admin session. Re-authenticated as Administrator.');
+    setIsAuthenticated(false);
+    setIsAuthorizedAdmin(false);
+    setAdminProfile(null);
+    setUserEmail('');
+    addToast('info', 'Signed out of Royal Dental Staff Admin session.');
   };
+
+  // Auth & RBAC Rendering Guards
+  if (isAuthChecking) {
+    return (
+      <div id="admin-auth-loading-screen" className="min-h-screen bg-slate-950 flex flex-col items-center justify-center p-4 font-sans">
+        <div className="w-12 h-12 border-4 border-amber-500 border-t-transparent rounded-full animate-spin mb-4 shadow-lg shadow-amber-500/20" />
+        <div className="text-sm font-bold text-white tracking-wide">Authenticating Admin Credentials...</div>
+        <div className="text-xs text-slate-500 mt-1">Verifying Supabase Auth Session & Role Permissions</div>
+      </div>
+    );
+  }
+
+  if (!isAuthenticated) {
+    return (
+      <LoginPage 
+        onLoginSuccess={async (profile) => {
+          setAdminProfile(profile);
+          setUserEmail(profile.email);
+          setIsAuthenticated(true);
+          setIsAuthorizedAdmin(true);
+          await loadClinicData();
+        }} 
+      />
+    );
+  }
+
+  if (!isAuthorizedAdmin) {
+    return (
+      <UnauthorizedPage 
+        userEmail={userEmail}
+        userRole={adminProfile?.role || 'patient'}
+        onSignOut={() => {
+          setIsAuthenticated(false);
+          setIsAuthorizedAdmin(false);
+          setAdminProfile(null);
+          setUserEmail('');
+        }}
+      />
+    );
+  }
 
   // Counters for badges
   const pendingBookingsCount = bookings.filter(b => b.status === 'Pending').length;
@@ -476,6 +568,7 @@ export default function App() {
 
       <LogoutModal
         isOpen={isLogoutModalOpen}
+        adminProfile={adminProfile}
         onClose={() => setIsLogoutModalOpen(false)}
         onConfirmLogout={handleConfirmLogout}
       />

@@ -21,9 +21,9 @@ interface SettingsPageProps {
 
 export const SettingsPage: React.FC<SettingsPageProps> = ({
   adminProfile, onSaveSettings }) => {
-  const [adminName, setAdminName] = useState(adminProfile?.name || 'Administrator');
-  const [adminEmail, setAdminEmail] = useState('amira.husseini@royaldental.com');
-  const [adminRole, setAdminRole] = useState('Chief Medical Administrator');
+  const [adminName, setAdminName] = useState(adminProfile?.full_name || adminProfile?.name || 'Administrator');
+  const [adminEmail, setAdminEmail] = useState(adminProfile?.email || 'admin@royaldental.com');
+  const [adminRole, setAdminRole] = useState(adminProfile?.role || 'Medical Administrator');
 
   const [clinicName, setClinicName] = useState('Royal Higher Specialized Dental Center');
   const [clinicPhone, setClinicPhone] = useState('+965 2200 1100');

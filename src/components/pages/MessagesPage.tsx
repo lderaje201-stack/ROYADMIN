@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { Conversation, Patient, NavigationTab } from '../../types';
+import { uploadMessageAttachment } from '../../lib/supabase';
 import { 
   Send, 
   Search, 
@@ -21,14 +22,20 @@ import {
   Edit3,
   Plus,
   Check,
+  CheckCheck,
   Trash2,
-  AlertCircle
+  AlertCircle,
+  Paperclip,
+  Image as ImageIcon,
+  Loader2,
+  ExternalLink
 } from 'lucide-react';
 
 interface MessagesPageProps {
   conversations: Conversation[];
   patients?: Patient[];
-  onSendMessage: (conversationId: string, text: string) => void;
+  onSendMessage: (conversationId: string, text: string, attachmentUrl?: string) => void;
+  onMarkAsRead?: (conversationId: string) => void;
   searchQuery: string;
   onShowToast?: (type: 'success' | 'info' | 'warning' | 'error', message: string) => void;
   onNavigateTab?: (tab: NavigationTab) => void;
@@ -44,6 +51,7 @@ export const MessagesPage: React.FC<MessagesPageProps> = ({
   conversations,
   patients = [],
   onSendMessage,
+  onMarkAsRead,
   searchQuery,
   onShowToast,
   onNavigateTab
@@ -114,6 +122,16 @@ export const MessagesPage: React.FC<MessagesPageProps> = ({
     }
   }, [selectedConvId]);
 
+  // Mark all unread messages in the active thread as read when opened/viewed
+  React.useEffect(() => {
+    if (activeConv && onMarkAsRead) {
+      const hasUnread = activeConv.unreadCount > 0 || activeConv.messages.some(m => m.sender === 'patient' && !m.is_read);
+      if (hasUnread) {
+        onMarkAsRead(activeConv.id);
+      }
+    }
+  }, [selectedConvId, activeConv?.id, activeConv?.unreadCount, activeConv?.messages.length]);
+
   // Filter conversations based on dedicated profile search or global topbar search
   const filteredConvs = conversations.filter((c) => {
     const query = (profileSearchQuery || searchQuery).toLowerCase().trim();
@@ -126,11 +144,57 @@ export const MessagesPage: React.FC<MessagesPageProps> = ({
     );
   });
 
-  const handleSend = (e: React.FormEvent) => {
+  // File Attachment State
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [filePreview, setFilePreview] = useState<string | null>(null);
+  const [isUploadingAttachment, setIsUploadingAttachment] = useState(false);
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setSelectedFile(file);
+      const url = URL.createObjectURL(file);
+      setFilePreview(url);
+    }
+  };
+
+  const handleRemoveFilePreview = () => {
+    setSelectedFile(null);
+    if (filePreview) {
+      URL.revokeObjectURL(filePreview);
+      setFilePreview(null);
+    }
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
+
+  const handleSend = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!replyText.trim() || !activeConv) return;
-    onSendMessage(activeConv.id, replyText);
+    if ((!replyText.trim() && !selectedFile) || !activeConv || isUploadingAttachment) return;
+    
+    let uploadedPublicUrl: string | undefined = undefined;
+
+    if (selectedFile) {
+      setIsUploadingAttachment(true);
+      if (onShowToast) onShowToast('info', 'Uploading image attachment to Supabase Storage...');
+      
+      const resUrl = await uploadMessageAttachment(selectedFile);
+      if (resUrl) {
+        uploadedPublicUrl = resUrl;
+        console.log('[STAFF SEND MESSAGE] Attachment uploaded successfully BEFORE insert. Public URL:', uploadedPublicUrl);
+      } else {
+        if (onShowToast) onShowToast('error', 'Failed to upload image attachment.');
+        setIsUploadingAttachment(false);
+        return;
+      }
+      setIsUploadingAttachment(false);
+    }
+
+    onSendMessage(activeConv.id, replyText, uploadedPublicUrl);
     setReplyText('');
+    handleRemoveFilePreview();
     setShowTemplatesDropdown(false);
   };
 
@@ -311,9 +375,16 @@ export const MessagesPage: React.FC<MessagesPageProps> = ({
                         <span className={`text-xs truncate ${isSelected ? 'font-bold text-white' : 'font-semibold text-slate-900'}`}>
                           {conv.patientName}
                         </span>
-                        <span className={`text-[10px] shrink-0 font-medium ${isSelected ? 'text-slate-200' : 'text-slate-400'}`}>
-                          {conv.lastTimestamp}
-                        </span>
+                        <div className="flex items-center gap-1.5 shrink-0">
+                          <span className={`text-[10px] font-medium ${isSelected ? 'text-slate-200' : 'text-slate-400'}`}>
+                            {conv.lastTimestamp}
+                          </span>
+                          {conv.unreadCount > 0 && (
+                            <span className="px-1.5 py-0.2 text-[10px] font-bold bg-rose-500 text-white rounded-full min-w-[18px] text-center shadow-2xs shrink-0 animate-pulse">
+                              {conv.unreadCount}
+                            </span>
+                          )}
+                        </div>
                       </div>
                       <p className={`text-[11px] truncate mt-0.5 ${isSelected ? 'text-slate-200' : 'text-slate-500'}`}>
                         {conv.lastMessage}
@@ -399,6 +470,7 @@ export const MessagesPage: React.FC<MessagesPageProps> = ({
 
             {activeConv.messages.map((msg) => {
               const isStaff = msg.sender === 'staff';
+              const imageUrl = msg.attachment_url || (msg.attachments && msg.attachments[0]?.url);
 
               return (
                 <div
@@ -409,16 +481,73 @@ export const MessagesPage: React.FC<MessagesPageProps> = ({
                     <span className="font-semibold text-slate-600">{msg.senderName}</span>
                     <span>•</span>
                     <span>{msg.timestamp}</span>
+                    {isStaff && (
+                      <>
+                        <span>•</span>
+                        {msg.is_read ? (
+                          <span className="inline-flex items-center gap-0.5 text-sky-600 font-semibold" title="Seen by recipient">
+                            <CheckCheck className="w-3 h-3 text-sky-600" /> Seen
+                          </span>
+                        ) : (
+                          <span className="inline-flex items-center gap-0.5 text-slate-400 font-medium" title="Delivered">
+                            <Check className="w-3 h-3 text-slate-400" /> Delivered
+                          </span>
+                        )}
+                      </>
+                    )}
                   </div>
 
                   <div
-                    className={`max-w-lg p-3.5 rounded-2xl text-xs leading-relaxed ${
+                    className={`max-w-md p-3 rounded-2xl text-xs leading-relaxed space-y-2 ${
                       isStaff
                         ? 'bg-slate-900 text-white rounded-tr-none shadow-2xs'
                         : 'bg-white border border-slate-200/90 text-slate-800 rounded-tl-none shadow-2xs'
                     }`}
                   >
-                    {msg.text}
+                    {/* Render Patient / Staff Attached Image */}
+                    {imageUrl && (
+                      <div className="overflow-hidden rounded-xl border border-slate-200/40 bg-black/5 my-0.5">
+                        <a 
+                          href={imageUrl} 
+                          target="_blank" 
+                          rel="noopener noreferrer" 
+                          className="block relative group overflow-hidden"
+                          title="Click to view full image in new tab"
+                        >
+                          <img 
+                            src={imageUrl} 
+                            alt="Attached image" 
+                            className="w-full max-h-72 object-cover rounded-xl transition-transform duration-200 group-hover:scale-[1.02]"
+                            onError={(e) => {
+                              console.warn('Image failed to load:', imageUrl);
+                            }}
+                          />
+                          <div className="absolute inset-0 bg-slate-950/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-1 text-white text-[11px] font-semibold">
+                            <ExternalLink className="w-3.5 h-3.5" /> Open Full Image
+                          </div>
+                        </a>
+                      </div>
+                    )}
+
+                    {/* Text content if present */}
+                    {msg.text && (
+                      <p className="whitespace-pre-wrap">{msg.text}</p>
+                    )}
+
+                    {/* Visual read status inside bubble */}
+                    {isStaff && (
+                      <div className="flex items-center justify-end gap-1 pt-0.5 text-[10px] select-none">
+                        {msg.is_read ? (
+                          <span className="inline-flex items-center gap-0.5 text-sky-300 font-semibold" title="Seen by recipient">
+                            <CheckCheck className="w-3.5 h-3.5 text-sky-300" /> Seen
+                          </span>
+                        ) : (
+                          <span className="inline-flex items-center gap-0.5 text-slate-400 font-medium" title="Delivered">
+                            <Check className="w-3.5 h-3.5 text-slate-400" /> Delivered
+                          </span>
+                        )}
+                      </div>
+                    )}
                   </div>
                 </div>
               );
@@ -461,7 +590,50 @@ export const MessagesPage: React.FC<MessagesPageProps> = ({
               </div>
             )}
 
+            {/* Selected File Image Attachment Preview Banner */}
+            {filePreview && (
+              <div className="mb-2 p-2 bg-slate-100 rounded-xl border border-slate-200 flex items-center justify-between gap-3 animate-in fade-in duration-150">
+                <div className="flex items-center gap-2.5 min-w-0">
+                  <img src={filePreview} alt="Selected attachment preview" className="w-10 h-10 object-cover rounded-lg border border-slate-300 shrink-0" />
+                  <div className="min-w-0">
+                    <div className="text-xs font-bold text-slate-900 truncate">{selectedFile?.name}</div>
+                    <div className="text-[10px] text-slate-500">{((selectedFile?.size || 0) / 1024).toFixed(1)} KB • Image Attachment</div>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={handleRemoveFilePreview}
+                  className="p-1 text-slate-400 hover:text-rose-600 transition-colors cursor-pointer shrink-0"
+                  title="Remove attached photo"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+            )}
+
             <div className="flex items-end gap-2">
+              <input 
+                type="file" 
+                ref={fileInputRef} 
+                onChange={handleFileChange} 
+                accept="image/*" 
+                className="hidden" 
+              />
+
+              <button
+                id="attach-image-btn"
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                className={`p-3 rounded-xl border transition-all shrink-0 cursor-pointer ${
+                  selectedFile
+                    ? 'bg-emerald-50 text-emerald-700 border-emerald-300'
+                    : 'bg-slate-50 hover:bg-slate-100 text-slate-500 border-slate-200/80'
+                }`}
+                title="Attach Image / Document"
+              >
+                <Paperclip className="w-4 h-4" />
+              </button>
+
               <button
                 id="quick-templates-toggle-btn"
                 type="button"
@@ -480,7 +652,7 @@ export const MessagesPage: React.FC<MessagesPageProps> = ({
                 <textarea
                   id="reply-textarea"
                   rows={2}
-                  placeholder={`Reply to ${activeConv.patientName}...`}
+                  placeholder={selectedFile ? `Add a caption for ${selectedFile.name}...` : `Reply to ${activeConv.patientName}...`}
                   value={replyText}
                   onChange={(e) => setReplyText(e.target.value)}
                   className="w-full bg-slate-50 border border-slate-200/80 rounded-xl p-3 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-slate-900/10 focus:border-slate-900 focus:bg-white resize-none transition-all placeholder:text-slate-400 font-medium"
@@ -496,11 +668,20 @@ export const MessagesPage: React.FC<MessagesPageProps> = ({
               <button
                 id="send-reply-btn"
                 type="submit"
-                disabled={!replyText.trim()}
+                disabled={(!replyText.trim() && !selectedFile) || isUploadingAttachment}
                 className="bg-slate-900 hover:bg-black disabled:opacity-50 text-white px-4 py-3 rounded-xl transition-all font-semibold flex items-center gap-1.5 shadow-2xs shrink-0 cursor-pointer h-[46px]"
               >
-                <Send className="w-4 h-4" />
-                <span className="text-xs hidden sm:inline">Send Reply</span>
+                {isUploadingAttachment ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    <span className="text-xs hidden sm:inline">Uploading...</span>
+                  </>
+                ) : (
+                  <>
+                    <Send className="w-4 h-4" />
+                    <span className="text-xs hidden sm:inline">Send Reply</span>
+                  </>
+                )}
               </button>
             </div>
           </form>

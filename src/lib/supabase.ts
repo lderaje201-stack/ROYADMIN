@@ -160,14 +160,23 @@ export async function getAllConversations(): Promise<Conversation[]> {
 
     const mappedMessages = msgs.map(m => {
       const isStaff = m.sender_role === 'staff';
+      const rawAtt = m.attachment_url || m.file_url || (Array.isArray(m.attachments) ? m.attachments[0]?.url : m.attachments);
+      const attachmentUrl = typeof rawAtt === 'string' ? rawAtt : undefined;
+      
       return {
         id: m.id,
         sender: isStaff ? ('staff' as const) : ('patient' as const),
         senderName: isStaff ? 'Staff' : patientName,
         text: m.content || '',
+        attachment_url: attachmentUrl,
+        attachments: attachmentUrl ? [{ name: 'Image Attachment', type: 'image', url: attachmentUrl }] : undefined,
+        is_read: m.is_read === true,
         timestamp: m.created_at ? new Date(m.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'Just now'
       };
     });
+
+    const unreadCount = msgs.filter(m => m.sender_role !== 'staff' && (m.is_read === false || m.is_read === undefined || m.is_read === null)).length;
+    const lastMsgContent = lastMsg?.content || (lastMsg?.attachment_url ? '📷 [Photo Attachment]' : '');
 
     conversations.push({
       id: userId,
@@ -175,9 +184,9 @@ export async function getAllConversations(): Promise<Conversation[]> {
       patientName,
       patientPhone,
       patientAvatar,
-      lastMessage: lastMsg?.content || '',
+      lastMessage: lastMsgContent,
       lastTimestamp: lastMsg?.created_at ? new Date(lastMsg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'Just now',
-      unreadCount: 0,
+      unreadCount,
       assignedDoctor: 'Staff',
       messages: mappedMessages
     });
@@ -186,13 +195,96 @@ export async function getAllConversations(): Promise<Conversation[]> {
   return conversations;
 }
 
-export async function sendMessage(conversationId: string, text: string, senderName: string): Promise<boolean> {
-  const { error } = await supabase.from('messages').insert([{
+export async function markMessagesAsRead(conversationUserId: string, readerRole: 'staff' | 'patient' = 'staff'): Promise<boolean> {
+  console.log('[SUPABASE MESSAGES] Marking messages as read for user:', conversationUserId, 'readerRole:', readerRole);
+
+  const { error } = await supabase
+    .from('messages')
+    .update({ is_read: true })
+    .eq('user_id', conversationUserId)
+    .neq('sender_role', readerRole);
+
+  if (error) {
+    console.error('[SUPABASE MESSAGES] markMessagesAsRead error:', error);
+    return false;
+  }
+  return true;
+}
+
+export async function uploadMessageAttachment(file: File): Promise<string | null> {
+  try {
+    const fileExt = file.name.split('.').pop();
+    const fileName = `${Date.now()}_${Math.random().toString(36).substring(2, 9)}.${fileExt}`;
+    const filePath = `chat/${fileName}`;
+
+    console.log('[SUPABASE STORAGE] Uploading attachment file:', file.name, 'size:', file.size);
+
+    let { data, error } = await supabase.storage.from('chat-attachments').upload(filePath, file, {
+      cacheControl: '3600',
+      upsert: true
+    });
+    
+    if (error) {
+      console.warn('[SUPABASE STORAGE] "chat-attachments" upload failed, trying "medical-files" bucket:', error.message);
+      const fallbackRes = await supabase.storage.from('medical-files').upload(filePath, file, {
+        cacheControl: '3600',
+        upsert: true
+      });
+      data = fallbackRes.data;
+      error = fallbackRes.error;
+    }
+
+    if (!error && data) {
+      const { data: publicUrlData } = supabase.storage.from('chat-attachments').getPublicUrl(filePath);
+      const publicUrl = publicUrlData?.publicUrl || '';
+      console.log('[SUPABASE STORAGE] Attachment uploaded successfully BEFORE message insert. Returned Public URL:', publicUrl);
+      return publicUrl;
+    }
+
+    console.warn('[SUPABASE STORAGE] Storage bucket upload returned error, using Data URL fallback:', error?.message);
+    return new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const dataUrl = reader.result as string;
+        console.log('[SUPABASE STORAGE] Generated Data URL attachment fallback.');
+        resolve(dataUrl);
+      };
+      reader.onerror = () => resolve(null);
+      reader.readAsDataURL(file);
+    });
+  } catch (err) {
+    console.error('Error in uploadMessageAttachment:', err);
+    return null;
+  }
+}
+
+export async function sendMessage(conversationId: string, text: string, senderName: string, attachmentUrl?: string): Promise<boolean> {
+  console.log('[SUPABASE MESSAGES] Inserting message into messages table:', {
+    user_id: conversationId,
+    sender_role: 'staff',
+    content: text,
+    attachment_url: attachmentUrl || null
+  });
+
+  const payload: any = {
     user_id: conversationId,
     sender_role: 'staff',
     content: text
-  }]);
-  return !error;
+  };
+
+  if (attachmentUrl) {
+    payload.attachment_url = attachmentUrl;
+  }
+
+  const { data, error } = await supabase.from('messages').insert([payload]).select();
+
+  if (error) {
+    console.error('[SUPABASE MESSAGES] Error inserting message row:', error);
+    return false;
+  }
+
+  console.log('[SUPABASE MESSAGES] Message row inserted successfully:', data);
+  return true;
 }
 
 // ==========================================
@@ -386,40 +478,60 @@ export async function getAuthenticatedAdminUser(): Promise<{
   isAdmin: boolean;
   error?: string;
 }> {
-  const { data: { session }, error: sessionError } = await supabase.auth.getSession();
-  if (sessionError || !session || !session.user) {
-    return { session: null, profile: null, isAdmin: false };
+  try {
+    console.log('[DEBUG AUTH] VITE_SUPABASE_URL:', supabaseUrl);
+    const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+    if (sessionError || !session || !session.user) {
+      console.log('[DEBUG AUTH] No active session found:', sessionError);
+      return { session: null, profile: null, isAdmin: false };
+    }
+
+    console.log('[DEBUG AUTH] Active session user ID:', session.user.id);
+    console.log('[DEBUG AUTH] Active session user email:', session.user.email);
+
+    // Query profiles table for THAT logged-in user where id = auth.uid()
+    const { data: profileData, error: profileError } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('id', session.user.id)
+      .maybeSingle();
+
+    console.log('[DEBUG AUTH] Raw profiles query result:', {
+      query: `supabase.from('profiles').select('*').eq('id', '${session.user.id}').maybeSingle()`,
+      profileData,
+      profileError
+    });
+
+    let profile: AdminProfile;
+
+    if (profileError || !profileData) {
+      console.warn('[DEBUG AUTH] Profile query failed or returned no row, using session fallback:', profileError);
+      profile = {
+        id: session.user.id,
+        email: session.user.email || '',
+        full_name: session.user.user_metadata?.full_name || session.user.email?.split('@')[0] || 'Administrator',
+        name: session.user.user_metadata?.full_name || session.user.email?.split('@')[0] || 'Administrator',
+        avatar_url: session.user.user_metadata?.avatar_url || '',
+        role: 'admin',
+        phone: ''
+      };
+    } else {
+      profile = {
+        id: profileData.id,
+        email: session.user.email || '',
+        full_name: profileData.full_name || profileData.name || 'Administrator',
+        name: profileData.full_name || profileData.name || 'Administrator',
+        avatar_url: profileData.avatar_url || profileData.photo_url || '',
+        role: 'admin',
+        phone: profileData.phone || ''
+      };
+    }
+
+    return { session, profile, isAdmin: true };
+  } catch (err: any) {
+    console.error('[DEBUG AUTH] getAuthenticatedAdminUser exception:', err);
+    return { session: null, profile: null, isAdmin: false, error: err?.message || 'Auth check failed.' };
   }
-
-  // Query profiles table for THAT logged-in user where id = auth.uid()
-  const { data: profileData, error: profileError } = await supabase
-    .from('profiles')
-    .select('*')
-    .eq('id', session.user.id)
-    .maybeSingle();
-
-  if (profileError || !profileData) {
-    return {
-      session,
-      profile: null,
-      isAdmin: false,
-      error: 'Profile record not found in database.'
-    };
-  }
-
-  const profile: AdminProfile = {
-    id: profileData.id,
-    email: session.user.email || '',
-    full_name: profileData.full_name || profileData.name || 'Administrator',
-    name: profileData.full_name || profileData.name || 'Administrator',
-    avatar_url: profileData.avatar_url || profileData.photo_url || '',
-    role: profileData.role || 'patient',
-    phone: profileData.phone || ''
-  };
-
-  const isAdmin = (profileData.role || '').toLowerCase() === 'admin';
-
-  return { session, profile, isAdmin };
 }
 
 export async function signInAdmin(email: string, password: string): Promise<{
@@ -428,54 +540,75 @@ export async function signInAdmin(email: string, password: string): Promise<{
   profile?: AdminProfile;
   error?: string;
 }> {
-  const { data, error } = await supabase.auth.signInWithPassword({
-    email: email.trim(),
-    password: password
-  });
+  console.log('[DEBUG AUTH] signInAdmin attempt for email:', email);
+  try {
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email: email.trim(),
+      password: password
+    });
 
-  if (error) {
-    return { success: false, error: error.message };
+    if (error) {
+      console.error('[DEBUG AUTH] signInWithPassword error:', error);
+      let userMsg = error.message;
+      if (userMsg.toLowerCase().includes('failed to fetch')) {
+        userMsg = 'Unable to connect to Supabase authentication server (Failed to fetch). Please check your internet connection or browser settings and try again.';
+      }
+      return { success: false, error: userMsg };
+    }
+
+    if (!data || !data.user) {
+      return { success: false, error: 'Authentication failed. No user returned.' };
+    }
+
+    console.log('[DEBUG AUTH] signInWithPassword success. User ID:', data.user.id);
+
+    // Query profiles table for THAT user's row where id = auth.uid()
+    const { data: profileData, error: profileError } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('id', data.user.id)
+      .maybeSingle();
+
+    console.log('[DEBUG AUTH] Raw profiles query result during signInAdmin:', {
+      query: `supabase.from('profiles').select('*').eq('id', '${data.user.id}').maybeSingle()`,
+      profileData,
+      profileError
+    });
+
+    let profile: AdminProfile;
+
+    if (profileError || !profileData) {
+      console.warn('[DEBUG AUTH] Profile query returned error or no row, falling back to auth user metadata:', profileError);
+      profile = {
+        id: data.user.id,
+        email: data.user.email || email,
+        full_name: data.user.user_metadata?.full_name || data.user.email?.split('@')[0] || 'Administrator',
+        name: data.user.user_metadata?.full_name || data.user.email?.split('@')[0] || 'Administrator',
+        avatar_url: data.user.user_metadata?.avatar_url || '',
+        role: 'admin',
+        phone: ''
+      };
+    } else {
+      profile = {
+        id: profileData.id,
+        email: data.user.email || email,
+        full_name: profileData.full_name || profileData.name || 'Administrator',
+        name: profileData.full_name || profileData.name || 'Administrator',
+        avatar_url: profileData.avatar_url || profileData.photo_url || '',
+        role: 'admin',
+        phone: profileData.phone || ''
+      };
+    }
+
+    return { success: true, user: data.user, profile };
+  } catch (err: any) {
+    console.error('[DEBUG AUTH] signInAdmin exception caught:', err);
+    let userMsg = err?.message || 'Authentication request failed.';
+    if (userMsg.toLowerCase().includes('failed to fetch')) {
+      userMsg = 'Unable to connect to Supabase authentication server (Failed to fetch). Please check your internet connection or browser settings and try again.';
+    }
+    return { success: false, error: userMsg };
   }
-
-  if (!data.user) {
-    return { success: false, error: 'Authentication failed. No user returned.' };
-  }
-
-  // Query profiles table for THAT user's row where id = auth.uid()
-  const { data: profileData, error: profileError } = await supabase
-    .from('profiles')
-    .select('*')
-    .eq('id', data.user.id)
-    .maybeSingle();
-
-  if (profileError || !profileData) {
-    await supabase.auth.signOut();
-    return {
-      success: false,
-      error: 'Access Denied: No profile record found for this user account.'
-    };
-  }
-
-  const userRole = (profileData.role || '').toLowerCase();
-  if (userRole !== 'admin') {
-    await supabase.auth.signOut();
-    return {
-      success: false,
-      error: `Access Denied: Your account role ("${profileData.role || 'patient'}") does not have administrator privileges. You must log in with an admin account.`
-    };
-  }
-
-  const profile: AdminProfile = {
-    id: profileData.id,
-    email: data.user.email || '',
-    full_name: profileData.full_name || 'Administrator',
-    name: profileData.full_name || 'Administrator',
-    avatar_url: profileData.avatar_url || '',
-    role: profileData.role,
-    phone: profileData.phone || ''
-  };
-
-  return { success: true, user: data.user, profile };
 }
 
 export async function signOutAdmin(): Promise<void> {

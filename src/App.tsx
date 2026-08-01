@@ -22,7 +22,7 @@ import {
   getAllPatients, 
   getAllTeamMembers, 
   getAllActivities,
-  createBooking, updateBookingStatus, rescheduleBooking, sendMessage, toggleFileReviewed, createMedicalFile, createPatient, saveTeamMember, toggleTeamPublished, createActivity,
+  createBooking, updateBookingStatus, rescheduleBooking, sendMessage, markMessagesAsRead, toggleFileReviewed, createMedicalFile, createPatient, saveTeamMember, toggleTeamPublished, createActivity,
   getAuthenticatedAdminUser,
   signOutAdmin,
   supabase
@@ -244,13 +244,21 @@ export default function App() {
     }
   };
 
-  const handleSendMessage = async (conversationId: string, text: string) => {
-    const success = await sendMessage(conversationId, text, 'Admin');
+  const handleSendMessage = async (conversationId: string, text: string, attachmentUrl?: string) => {
+    const success = await sendMessage(conversationId, text, 'Admin', attachmentUrl);
     if (success) {
-      addToast('success', 'Reply sent.');
+      addToast('success', attachmentUrl ? 'Message with image attachment sent.' : 'Reply sent.');
       const c = await getAllConversations(); setConversations(c);
     } else {
       addToast('error', 'Failed to send message');
+    }
+  };
+
+  const handleMarkAsRead = async (conversationId: string) => {
+    const success = await markMessagesAsRead(conversationId, 'staff');
+    if (success) {
+      const c = await getAllConversations();
+      setConversations(c);
     }
   };
 
@@ -460,6 +468,7 @@ export default function App() {
                 conversations={conversations}
                 patients={patients}
                 onSendMessage={handleSendMessage}
+                onMarkAsRead={handleMarkAsRead}
                 searchQuery={searchQuery}
                 onShowToast={(type, msg) => addToast(type, msg)}
                 onNavigateTab={setActiveTab}

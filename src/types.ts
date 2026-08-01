@@ -44,7 +44,9 @@ export interface MessageItem {
   senderName: string;
   text: string;
   timestamp: string;
+  attachment_url?: string;
   attachments?: { name: string; type: string; url?: string }[];
+  is_read?: boolean;
 }
 
 export interface Conversation {

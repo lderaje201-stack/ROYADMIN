@@ -126,6 +126,24 @@ export async function rescheduleBooking(id: string, date: string, time: string):
 // Schema: id, user_id, sender_role, content, attachment_url, created_at
 // ==========================================
 export async function getAllConversations(): Promise<Conversation[]> {
+  // SECURITY GUARD: Verify current authenticated user has role === 'admin'
+  const { data: { session } } = await supabase.auth.getSession();
+  if (!session?.user) {
+    console.warn('[SECURITY GUARD] getAllConversations blocked: User is unauthenticated.');
+    return [];
+  }
+
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('role')
+    .eq('id', session.user.id)
+    .maybeSingle();
+
+  if (!profile || (profile.role || '').toLowerCase() !== 'admin') {
+    console.warn('[SECURITY GUARD] getAllConversations blocked: User role is not admin.', profile?.role);
+    return [];
+  }
+
   const [msgRes, profileRes] = await Promise.all([
     supabase.from('messages').select('*').order('created_at', { ascending: true }),
     supabase.from('profiles').select('id, full_name, phone, avatar_url')

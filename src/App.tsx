@@ -463,7 +463,7 @@ export default function App() {
               />
             )}
 
-            {activeTab === 'messages' && (
+            {activeTab === 'messages' && isAuthorizedAdmin && (
               <MessagesPage
                 conversations={conversations}
                 patients={patients}

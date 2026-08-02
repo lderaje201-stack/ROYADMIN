@@ -39,7 +39,7 @@ export const LogoutModal: React.FC<LogoutModalProps> = ({
         <div className="p-6 space-y-5">
           <div className="flex items-center gap-3.5 p-3.5 bg-neutral-50/60 border border-neutral-200/60 rounded-xl">
             <img
-              src={adminProfile?.avatar_url || adminProfile?.photoUrl || "https://images.unsplash.com/photo-1559839734-2b71ea197ec2?w=100&auto=format&fit=crop&q=80"}
+              src={(adminProfile?.avatar_url && adminProfile.avatar_url.trim() !== '') ? adminProfile.avatar_url : ((adminProfile?.photoUrl && adminProfile.photoUrl.trim() !== '') ? adminProfile.photoUrl : "https://images.unsplash.com/photo-1559839734-2b71ea197ec2?w=100&auto=format&fit=crop&q=80")}
               alt="Logged in Staff"
               className="w-12 h-12 rounded-full object-cover border-2 border-white shadow-2xs shrink-0"
             />

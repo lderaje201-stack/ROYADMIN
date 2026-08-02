@@ -340,7 +340,7 @@ export const TopBar: React.FC<TopBarProps> = ({
                               className="w-full text-left p-2 hover:bg-slate-50 rounded-xl transition-colors flex items-center justify-between cursor-pointer group"
                             >
                               <div className="flex items-center gap-2.5">
-                                <img src={d.photoUrl} alt={d.name} className="w-7 h-7 rounded-full object-cover border border-slate-200" />
+                                <img src={(d.photoUrl && d.photoUrl.trim() !== '') ? d.photoUrl : "https://images.unsplash.com/photo-1559839734-2b71ea197ec2?w=100&auto=format&fit=crop&q=80"} alt={d.name} className="w-7 h-7 rounded-full object-cover border border-slate-200" />
                                 <div>
                                   <div className="text-xs font-semibold text-slate-900">{d.name}</div>
                                   <div className="text-[10px] text-slate-500">{d.specialty} • {d.roomNumber}</div>

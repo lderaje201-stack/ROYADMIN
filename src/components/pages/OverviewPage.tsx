@@ -255,7 +255,7 @@ export const OverviewPage: React.FC<OverviewPageProps> = ({
                   className="flex items-center justify-between p-4 bg-slate-50/70 border border-slate-200/60 rounded-xl hover:bg-slate-50 transition-all"
                 >
                   <div className="flex items-center gap-3.5">
-                    {b.patientAvatar ? (
+                    {(b.patientAvatar && b.patientAvatar.trim() !== '') ? (
                       <img
                         src={b.patientAvatar}
                         alt={b.patientName}

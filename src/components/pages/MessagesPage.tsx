@@ -18,7 +18,6 @@ import {
   X,
   UserCheck,
   Clock,
-  Pin,
   Edit3,
   Plus,
   Check,
@@ -60,11 +59,6 @@ export const MessagesPage: React.FC<MessagesPageProps> = ({
   const [replyText, setReplyText] = useState('');
   const [showTemplatesDropdown, setShowTemplatesDropdown] = useState(false);
   const [profileSearchQuery, setProfileSearchQuery] = useState('');
-  
-  // Hover & Pin states for Left Message Sidebar
-  const [isSidebarHovered, setIsSidebarHovered] = useState(false);
-  const [isSidebarPinned, setIsSidebarPinned] = useState(false);
-  const isSidebarExpanded = isSidebarHovered || isSidebarPinned;
 
   // Right Panel Patient Profile Visibility
   const [isProfileOpen, setIsProfileOpen] = useState(true);
@@ -257,85 +251,55 @@ export const MessagesPage: React.FC<MessagesPageProps> = ({
   return (
     <div id="messages-page" className="h-full w-full flex bg-white overflow-hidden relative">
       
-      {/* 1. LEFT PANEL: Hover-Expanding Message Sidebar */}
+      {/* 1. LEFT PANEL: Patient Conversation Sidebar */}
       <div 
-        id="messages-hover-sidebar"
-        onMouseEnter={() => setIsSidebarHovered(true)}
-        onMouseLeave={() => setIsSidebarHovered(false)}
-        className={`border-r border-slate-200/80 flex flex-col bg-slate-50/70 shrink-0 h-full transition-all duration-300 ease-in-out z-20 relative ${
-          isSidebarExpanded ? 'w-80 shadow-lg' : 'w-16 sm:w-20'
-        }`}
+        id="messages-sidebar"
+        className="w-80 border-r border-slate-200/80 flex flex-col bg-slate-50/70 shrink-0 h-full z-20 relative"
       >
-        {/* Sidebar Header: Preserves Message & Search Icons with identical sizing in Collapsed & Expanded Modes */}
+        {/* Sidebar Header */}
         <div className="p-3 pt-[3.75rem] border-b border-slate-200/80 bg-white flex flex-col justify-center min-h-[61px] shrink-0">
-          {isSidebarExpanded ? (
-            <div className="space-y-2.5 animate-in fade-in duration-200">
-              {/* Row 1: Message Icon + "Patient Messages" Header Text */}
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <MessageSquare className="w-5 h-5 text-slate-800 shrink-0" />
-                  <h2 className="text-xs font-bold text-slate-900 uppercase tracking-wider">
-                    Patient Messages
-                  </h2>
-                </div>
-                <div className="flex items-center gap-1">
-                  <button
-                    onClick={() => setIsSidebarPinned(!isSidebarPinned)}
-                    className={`p-1 rounded-lg transition-colors cursor-pointer ${
-                      isSidebarPinned ? 'text-slate-900 bg-slate-200/80' : 'text-slate-400 hover:text-slate-700'
-                    }`}
-                    title={isSidebarPinned ? "Unpin Sidebar (Auto-collapse on mouse leave)" : "Pin Sidebar Always Open"}
-                  >
-                    <Pin className={`w-4 h-4 ${isSidebarPinned ? 'fill-slate-900' : ''}`} />
-                  </button>
-                  <span className="text-[10px] bg-slate-100 text-slate-800 px-2 py-0.5 rounded-full font-bold border border-slate-200/80">
-                    {filteredConvs.length}
-                  </span>
-                </div>
+          <div className="space-y-2.5">
+            {/* Row 1: Message Icon + "Patient Messages" Header Text */}
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <MessageSquare className="w-5 h-5 text-slate-800 shrink-0" />
+                <h2 className="text-xs font-bold text-slate-900 uppercase tracking-wider">
+                  Patient Messages
+                </h2>
               </div>
+              <span className="text-[10px] bg-slate-100 text-slate-800 px-2 py-0.5 rounded-full font-bold border border-slate-200/80">
+                {filteredConvs.length}
+              </span>
+            </div>
 
-              {/* Row 2: Search Icon + Search Input Text Field */}
-              <div className="relative">
-                <Search className="w-5 h-5 text-slate-400 absolute left-2 top-1/2 -translate-y-1/2" />
-                <input
-                  id="patient-profile-search-input"
-                  type="text"
-                  placeholder="Search profile or phone..."
-                  value={profileSearchQuery}
-                  onChange={(e) => setProfileSearchQuery(e.target.value)}
-                  className="w-full bg-slate-100/90 text-xs border border-slate-200/80 rounded-xl pl-8 pr-7 py-1.5 focus:outline-none focus:ring-2 focus:ring-slate-900/10 focus:border-slate-900 focus:bg-white transition-all placeholder:text-slate-400 font-medium"
-                />
-                {profileSearchQuery && (
-                  <button
-                    onClick={() => setProfileSearchQuery('')}
-                    className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700 cursor-pointer"
-                  >
-                    <X className="w-3.5 h-3.5" />
-                  </button>
-                )}
-              </div>
+            {/* Row 2: Search Icon + Search Input Text Field */}
+            <div className="relative">
+              <Search className="w-5 h-5 text-slate-400 absolute left-2 top-1/2 -translate-y-1/2" />
+              <input
+                id="patient-profile-search-input"
+                type="text"
+                placeholder="Search profile or phone..."
+                value={profileSearchQuery}
+                onChange={(e) => setProfileSearchQuery(e.target.value)}
+                className="w-full bg-slate-100/90 text-xs border border-slate-200/80 rounded-xl pl-8 pr-7 py-1.5 focus:outline-none focus:ring-2 focus:ring-slate-900/10 focus:border-slate-900 focus:bg-white transition-colors placeholder:text-slate-400 font-medium"
+              />
+              {profileSearchQuery && (
+                <button
+                  onClick={() => setProfileSearchQuery('')}
+                  className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700 cursor-pointer"
+                >
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              )}
             </div>
-          ) : (
-            /* Collapsed State: Message and Search Icons kept identical in size (w-5 h-5) */
-            <div className="flex flex-col items-center justify-center gap-2.5 py-0.5">
-              <div className="relative p-1 hover:bg-slate-100 rounded-lg transition-colors cursor-pointer" title="Patient Messages">
-                <MessageSquare className="w-5 h-5 text-slate-700" />
-                {conversations.some(c => c.unreadCount > 0) && (
-                  <span className="absolute top-0 right-0 w-2 h-2 bg-rose-500 rounded-full ring-2 ring-white" />
-                )}
-              </div>
-              <div className="p-1 hover:bg-slate-100 rounded-lg transition-colors cursor-pointer" title="Search profile or phone">
-                <Search className="w-5 h-5 text-slate-700" />
-              </div>
-            </div>
-          )}
+          </div>
         </div>
 
         {/* Column 1: Independent Scrolling Patient List */}
         <div id="conversation-list" className="flex-1 overflow-y-auto divide-y divide-slate-100/80 custom-scrollbar">
           {filteredConvs.length === 0 ? (
             <div className="p-4 text-center text-slate-400 text-xs">
-              {isSidebarExpanded ? "No matching profiles found." : <Search className="w-5 h-5 mx-auto text-slate-400" />}
+              No matching profiles found.
             </div>
           ) : (
             filteredConvs.map((conv) => {
@@ -350,16 +314,16 @@ export const MessagesPage: React.FC<MessagesPageProps> = ({
                     setShowTemplatesDropdown(false);
                   }}
                   title={conv.patientName}
-                  className={`w-full text-left transition-all flex items-center p-3 cursor-pointer ${
+                  className={`w-full text-left flex items-center p-3 cursor-pointer transition-colors ${
                     isSelected
                       ? 'bg-black/50 text-white font-semibold backdrop-blur-xs ring-1 ring-black/20 shadow-xs'
                       : 'hover:bg-slate-100/80 text-slate-800'
                   }`}
                 >
-                  {/* Fixed-Size Avatar Container: Always w-10 h-10 in both collapsed & expanded modes */}
+                  {/* Fixed-Size Avatar Container */}
                   <div className="relative shrink-0 flex items-center justify-center w-10 h-10">
                     <img
-                      src={conv.patientAvatar}
+                      src={(conv.patientAvatar && conv.patientAvatar.trim() !== '') ? conv.patientAvatar : "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&auto=format&fit=crop&q=80"}
                       alt={conv.patientName}
                       className="w-10 h-10 rounded-full object-cover border border-slate-200/80 shrink-0"
                     />
@@ -368,29 +332,27 @@ export const MessagesPage: React.FC<MessagesPageProps> = ({
                     )}
                   </div>
 
-                  {/* Text Details: Only revealed on hover without changing icon/avatar size */}
-                  {isSidebarExpanded && (
-                    <div className="min-w-0 flex-1 ml-3 animate-in fade-in duration-150">
-                      <div className="flex items-center justify-between gap-1">
-                        <span className={`text-xs truncate ${isSelected ? 'font-bold text-white' : 'font-semibold text-slate-900'}`}>
-                          {conv.patientName}
+                  {/* Text Details: Always visible */}
+                  <div className="min-w-0 flex-1 ml-3">
+                    <div className="flex items-center justify-between gap-1">
+                      <span className={`text-xs truncate ${isSelected ? 'font-bold text-white' : 'font-semibold text-slate-900'}`}>
+                        {conv.patientName}
+                      </span>
+                      <div className="flex items-center gap-1.5 shrink-0">
+                        <span className={`text-[10px] font-medium ${isSelected ? 'text-slate-200' : 'text-slate-400'}`}>
+                          {conv.lastTimestamp}
                         </span>
-                        <div className="flex items-center gap-1.5 shrink-0">
-                          <span className={`text-[10px] font-medium ${isSelected ? 'text-slate-200' : 'text-slate-400'}`}>
-                            {conv.lastTimestamp}
+                        {conv.unreadCount > 0 && (
+                          <span className="px-1.5 py-0.2 text-[10px] font-bold bg-rose-500 text-white rounded-full min-w-[18px] text-center shadow-2xs shrink-0 animate-pulse">
+                            {conv.unreadCount}
                           </span>
-                          {conv.unreadCount > 0 && (
-                            <span className="px-1.5 py-0.2 text-[10px] font-bold bg-rose-500 text-white rounded-full min-w-[18px] text-center shadow-2xs shrink-0 animate-pulse">
-                              {conv.unreadCount}
-                            </span>
-                          )}
-                        </div>
+                        )}
                       </div>
-                      <p className={`text-[11px] truncate mt-0.5 ${isSelected ? 'text-slate-200' : 'text-slate-500'}`}>
-                        {conv.lastMessage}
-                      </p>
                     </div>
-                  )}
+                    <p className={`text-[11px] truncate mt-0.5 ${isSelected ? 'text-slate-200' : 'text-slate-500'}`}>
+                      {conv.lastMessage}
+                    </p>
+                  </div>
                 </button>
               );
             })
@@ -410,7 +372,7 @@ export const MessagesPage: React.FC<MessagesPageProps> = ({
               title="Click to view/edit patient profile details"
             >
               <img
-                src={activeConv.patientAvatar}
+                src={(activeConv.patientAvatar && activeConv.patientAvatar.trim() !== '') ? activeConv.patientAvatar : "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&auto=format&fit=crop&q=80"}
                 alt={activeConv.patientName}
                 className="w-10 h-10 rounded-full object-cover border border-slate-200 shrink-0"
               />
@@ -843,7 +805,7 @@ export const MessagesPage: React.FC<MessagesPageProps> = ({
                 {/* Main Avatar & Identity Card */}
                 <div className="text-center bg-white p-4 rounded-2xl border border-slate-200/80 shadow-2xs">
                   <img
-                    src={activeConv.patientAvatar}
+                    src={(activeConv.patientAvatar && activeConv.patientAvatar.trim() !== '') ? activeConv.patientAvatar : "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&auto=format&fit=crop&q=80"}
                     alt={editForm.name}
                     className="w-16 h-16 rounded-full object-cover border-2 border-slate-200 mx-auto mb-2 shadow-xs"
                   />

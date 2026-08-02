@@ -109,7 +109,7 @@ export const TeamMembersPage: React.FC<TeamMembersPageProps> = ({
                 {/* Top Profile Header */}
                 <div className="flex items-start gap-3">
                   <img
-                    src={member.photoUrl}
+                    src={(member.photoUrl && member.photoUrl.trim() !== '') ? member.photoUrl : "https://images.unsplash.com/photo-1559839734-2b71ea197ec2?w=100&auto=format&fit=crop&q=80"}
                     alt={member.name}
                     className="w-16 h-16 rounded-xl object-cover border border-slate-200 shrink-0 shadow-xs"
                   />
@@ -215,7 +215,7 @@ export const TeamMembersPage: React.FC<TeamMembersPageProps> = ({
                       <td className="py-3.5 px-4">
                         <div className="flex items-center gap-3">
                           <img
-                          src={m.photoUrl}
+                          src={(m.photoUrl && m.photoUrl.trim() !== '') ? m.photoUrl : "https://images.unsplash.com/photo-1559839734-2b71ea197ec2?w=100&auto=format&fit=crop&q=80"}
                           alt={m.name}
                           className="w-10 h-10 rounded-lg object-cover border border-slate-200 shrink-0"
                         />

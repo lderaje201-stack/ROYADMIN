@@ -676,7 +676,7 @@ export const BookingsPage: React.FC<BookingsPageProps> = ({
                       {/* Patient Name */}
                       <td className="py-3.5 px-4">
                         <div className="flex items-center gap-3">
-                          {b.patientAvatar ? (
+                          {(b.patientAvatar && b.patientAvatar.trim() !== '') ? (
                             <img
                               src={b.patientAvatar}
                               alt={b.patientName}

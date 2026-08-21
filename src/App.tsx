@@ -25,6 +25,7 @@ import {
   createBooking, updateBookingStatus, rescheduleBooking, sendMessage, markMessagesAsRead, toggleFileReviewed, createMedicalFile, createPatient, saveTeamMember, toggleTeamPublished, createActivity,
   getAuthenticatedAdminUser,
   signOutAdmin,
+  subscribeToClinicUpdates,
   supabase
 } from './lib/supabase';
 
@@ -140,8 +141,28 @@ export default function App() {
       }
     });
 
+    // Realtime Postgres changes subscription
+    const unsubscribeRealtime = subscribeToClinicUpdates((table, _payload) => {
+      console.log(`[REALTIME UPDATE] Change detected in table: ${table}`);
+      if (table === 'bookings') {
+        getAllBookings().then(setBookings);
+        getAllActivities().then(setActivities);
+      } else if (table === 'messages') {
+        getAllConversations().then(setConversations);
+        getAllActivities().then(setActivities);
+      } else if (table === 'medical_files') {
+        getAllMedicalFiles().then(setMedicalFiles);
+        getAllActivities().then(setActivities);
+      } else if (table === 'team_members') {
+        getAllTeamMembers().then(setTeamMembers);
+      } else if (table === 'profiles') {
+        getAllPatients().then(setPatients);
+      }
+    });
+
     return () => {
       subscription.unsubscribe();
+      unsubscribeRealtime();
     };
   }, []);
 

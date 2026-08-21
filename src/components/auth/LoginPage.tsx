@@ -94,7 +94,10 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess }) => {
                   required
                   placeholder="admin@royaldental.com"
                   value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  onChange={(e) => {
+                    setEmail(e.target.value);
+                    if (errorMessage) setErrorMessage(null);
+                  }}
                   className="w-full bg-slate-950/80 border border-slate-800 rounded-xl pl-10 pr-4 py-3 text-xs text-white placeholder:text-slate-600 focus:outline-none focus:border-amber-500/80 focus:ring-1 focus:ring-amber-500/80 transition-all"
                 />
               </div>
@@ -112,7 +115,10 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess }) => {
                   required
                   placeholder="••••••••••••"
                   value={password}
-                  onChange={(e) => setPassword(e.target.value)}
+                  onChange={(e) => {
+                    setPassword(e.target.value);
+                    if (errorMessage) setErrorMessage(null);
+                  }}
                   className="w-full bg-slate-950/80 border border-slate-800 rounded-xl pl-10 pr-10 py-3 text-xs text-white placeholder:text-slate-600 focus:outline-none focus:border-amber-500/80 focus:ring-1 focus:ring-amber-500/80 transition-all"
                 />
                 <button

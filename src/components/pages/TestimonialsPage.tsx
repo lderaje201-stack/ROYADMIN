@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { Review } from '../../types';
-import { getAllReviews, toggleReviewFeatured } from '../../lib/supabase';
+import { Testimonial } from '../../types';
+import { getAllTestimonials, toggleTestimonialFeatured } from '../../services/TestimonialService';
 import { 
   Star, 
   Search, 
@@ -19,18 +19,18 @@ interface ReviewsPageProps {
   onToast: (type: 'success' | 'info' | 'warning' | 'error', msg: string) => void;
 }
 
-export const ReviewsPage: React.FC<ReviewsPageProps> = ({ searchQuery, onToast }) => {
-  const [reviews, setReviews] = useState<Review[]>([]);
+export const TestimonialsPage: React.FC<ReviewsPageProps> = ({ searchQuery, onToast }) => {
+  const [testimonials, setReviews] = useState<Testimonial[]>([]);
   const [loading, setLoading] = useState(true);
   const [filterRating, setFilterRating] = useState<number | 'all'>('all');
 
   const loadReviewsData = async () => {
     setLoading(true);
     try {
-      const data = await getAllReviews();
+      const data = await getAllTestimonials();
       setReviews(data);
     } catch (err) {
-      console.error('Failed to load reviews for admin:', err);
+      console.error('Failed to load testimonials for admin:', err);
     } finally {
       setLoading(false);
     }
@@ -46,16 +46,16 @@ export const ReviewsPage: React.FC<ReviewsPageProps> = ({ searchQuery, onToast }
     setReviews(prev => prev.map(r => r.id === reviewId ? { ...r, is_featured: newStatus } : r));
 
     try {
-      const success = await toggleReviewFeatured(reviewId, newStatus);
+      const success = await toggleTestimonialFeatured(reviewId, newStatus);
       if (success) {
         onToast(
           newStatus ? 'success' : 'info',
-          `Review ${newStatus ? 'featured on public homepage' : 'removed from featured list'}.`
+          `Testimonial ${newStatus ? 'featured on public homepage' : 'removed from featured list'}.`
         );
       } else {
         // Rollback on error
         setReviews(prev => prev.map(r => r.id === reviewId ? { ...r, is_featured: currentStatus } : r));
-        onToast('error', 'Failed to update review status in database.');
+        onToast('error', 'Failed to update testimonial status in database.');
       }
     } catch (err) {
       setReviews(prev => prev.map(r => r.id === reviewId ? { ...r, is_featured: currentStatus } : r));
@@ -63,7 +63,7 @@ export const ReviewsPage: React.FC<ReviewsPageProps> = ({ searchQuery, onToast }
     }
   };
 
-  const filteredReviews = reviews.filter((r) => {
+  const filteredReviews = testimonials.filter((r) => {
     const q = searchQuery.toLowerCase();
     const matchesSearch = !q ||
       r.comment.toLowerCase().includes(q) ||
@@ -74,19 +74,19 @@ export const ReviewsPage: React.FC<ReviewsPageProps> = ({ searchQuery, onToast }
     return matchesSearch && matchesRating;
   });
 
-  const featuredCount = reviews.filter(r => r.is_featured).length;
-  const avgRating = reviews.length > 0 
-    ? (reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length).toFixed(1)
+  const featuredCount = testimonials.filter(r => r.is_featured).length;
+  const avgRating = testimonials.length > 0 
+    ? (testimonials.reduce((sum, r) => sum + r.rating, 0) / testimonials.length).toFixed(1)
     : '0.0';
 
   return (
-    <div id="admin-reviews-page" className="p-8 space-y-6 max-w-7xl mx-auto">
+    <div id="admin-testimonials-page" className="p-8 space-y-6 max-w-7xl mx-auto">
       {/* Top Header Controls Bar */}
       <div className="flex flex-col sm:flex-row items-center justify-between gap-4 bg-white p-6 rounded-2xl border border-neutral-200/60 shadow-[0_2px_10px_-3px_rgba(0,0,0,0.07)]">
         <div>
-          <h2 className="text-base font-bold text-slate-900">Patient Testimonials & Reviews</h2>
+          <h2 className="text-base font-bold text-slate-900">Patient Testimonials & Testimonials</h2>
           <p className="text-xs text-slate-500 mt-0.5">
-            Manage submitted patient feedback and publish selected reviews to the public home page
+            Manage submitted patient feedback and publish selected testimonials to the public home page
           </p>
         </div>
 
@@ -108,8 +108,8 @@ export const ReviewsPage: React.FC<ReviewsPageProps> = ({ searchQuery, onToast }
             <MessageSquare className="w-5 h-5" />
           </div>
           <div>
-            <div className="text-xs text-slate-500 font-medium">Total Reviews Submitted</div>
-            <div className="text-xl font-bold text-slate-900">{reviews.length}</div>
+            <div className="text-xs text-slate-500 font-medium">Total Testimonials Submitted</div>
+            <div className="text-xl font-bold text-slate-900">{testimonials.length}</div>
           </div>
         </div>
 
@@ -155,10 +155,10 @@ export const ReviewsPage: React.FC<ReviewsPageProps> = ({ searchQuery, onToast }
         ))}
       </div>
 
-      {/* Reviews Table */}
+      {/* Testimonials Table */}
       <div className="bg-white border border-neutral-200/60 rounded-2xl shadow-[0_2px_10px_-3px_rgba(0,0,0,0.07)] overflow-hidden">
         <div className="overflow-x-auto">
-          <table id="admin-reviews-table" className="w-full text-left text-xs border-collapse">
+          <table id="admin-testimonials-table" className="w-full text-left text-xs border-collapse">
             <thead>
               <tr className="bg-slate-50 border-b border-slate-200 text-slate-700 font-bold uppercase tracking-wider text-[11px]">
                 <th className="py-3.5 px-4">Patient / User ID</th>
@@ -172,14 +172,14 @@ export const ReviewsPage: React.FC<ReviewsPageProps> = ({ searchQuery, onToast }
               {loading ? (
                 <tr>
                   <td colSpan={5} className="py-12 text-center text-slate-400 text-xs">
-                    Loading reviews from Supabase table...
+                    Loading testimonials from Supabase table...
                   </td>
                 </tr>
               ) : filteredReviews.length === 0 ? (
                 <tr>
                   <td colSpan={5} className="py-12 text-center text-slate-500 text-xs">
                     <AlertCircle className="w-8 h-8 text-slate-300 mx-auto mb-2" />
-                    No patient reviews found matching the current criteria.
+                    No patient testimonials found matching the current criteria.
                   </td>
                 </tr>
               ) : (

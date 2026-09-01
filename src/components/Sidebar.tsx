@@ -89,8 +89,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
       adminOnly: true
     },
     {
-      id: 'reviews' as NavigationTab,
-      label: 'Patient Reviews',
+      id: 'testimonials' as NavigationTab,
+      label: 'Patient Testimonials',
       icon: Star,
       badge: null,
       adminOnly: false
@@ -273,7 +273,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
           <>
             <div className="flex items-center gap-2.5 p-2 rounded-2xl bg-white border border-slate-200/60 shadow-2xs mb-2">
               <img
-                src={(adminProfile?.avatar_url && adminProfile.avatar_url.trim() !== '') ? adminProfile.avatar_url : ((adminProfile?.photoUrl && adminProfile.photoUrl.trim() !== '') ? adminProfile.photoUrl : "https://images.unsplash.com/photo-1559839734-2b71ea197ec2?w=100&auto=format&fit=crop&q=80")}
+                src={(adminProfile?.avatar_url && adminProfile.avatar_url.trim() !== '') ? adminProfile.avatar_url : ((adminProfile?.photo_url && adminProfile.photo_url.trim() !== '') ? adminProfile.photo_url : "https://images.unsplash.com/photo-1559839734-2b71ea197ec2?w=100&auto=format&fit=crop&q=80")}
                 alt={adminProfile?.full_name || adminProfile?.name || "Logged in Staff"}
                 className="w-8 h-8 rounded-full object-cover border border-slate-200 shrink-0"
               />
@@ -300,7 +300,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
           <div className="flex flex-col items-center gap-2 py-1">
             <div className="relative group">
               <img
-                src={(adminProfile?.avatar_url && adminProfile.avatar_url.trim() !== '') ? adminProfile.avatar_url : ((adminProfile?.photoUrl && adminProfile.photoUrl.trim() !== '') ? adminProfile.photoUrl : "https://images.unsplash.com/photo-1559839734-2b71ea197ec2?w=100&auto=format&fit=crop&q=80")}
+                src={(adminProfile?.avatar_url && adminProfile.avatar_url.trim() !== '') ? adminProfile.avatar_url : ((adminProfile?.photo_url && adminProfile.photo_url.trim() !== '') ? adminProfile.photo_url : "https://images.unsplash.com/photo-1559839734-2b71ea197ec2?w=100&auto=format&fit=crop&q=80")}
                 alt={adminProfile?.full_name || adminProfile?.name || "Logged in Staff"}
                 className="w-8 h-8 rounded-full object-cover border border-slate-200 cursor-pointer"
               />

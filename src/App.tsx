@@ -1,3 +1,4 @@
+import StaffAssistant from "./components/StaffAssistant";
 /**
  * @license
  * SPDX-License-Identifier: Apache-2.0
@@ -15,19 +16,15 @@ import {
   Toast, 
   BookingStatus 
 } from './types';
-import { 
-  getAllBookings, 
-  getAllConversations, 
-  getAllMedicalFiles, 
-  getAllPatients, 
-  getAllTeamMembers, 
-  getAllActivities,
-  createBooking, updateBookingStatus, rescheduleBooking, sendMessage, markMessagesAsRead, toggleFileReviewed, createMedicalFile, createPatient, saveTeamMember, toggleTeamPublished, createActivity,
-  getAuthenticatedAdminUser,
-  signOutAdmin,
-  subscribeToClinicUpdates,
-  supabase
-} from './lib/supabase';
+import { getAllBookings, createBooking, updateBookingStatus, rescheduleBooking } from './services/BookingService';
+import { getAllConversations, sendMessage, markMessagesAsRead } from './services/MessagingService';
+import { getAllMedicalFiles, toggleFileReviewed, createMedicalFile } from './services/MedicalFileService';
+import { getAllPatients, createPatient } from './services/PatientService';
+import { getAllTeamMembers, saveTeamMember, toggleTeamPublished } from './services/TeamService';
+import { getAllActivities, createActivity } from './services/AnalyticsService';
+import { getAuthenticatedAdminUser, signOutAdmin } from './services/AuthService';
+import { subscribeToClinicUpdates } from './services/RealtimeService';
+import { supabase } from './lib/supabase';
 
 import { LoginPage } from './components/auth/LoginPage';
 import { UnauthorizedPage } from './components/auth/UnauthorizedPage';
@@ -40,7 +37,7 @@ import { MessagesPage } from './components/pages/MessagesPage';
 import { MedicalFilesPage } from './components/pages/MedicalFilesPage';
 import { PatientsPage } from './components/pages/PatientsPage';
 import { TeamMembersPage } from './components/pages/TeamMembersPage';
-import { ReviewsPage } from './components/pages/ReviewsPage';
+import { TestimonialsPage } from './components/pages/TestimonialsPage';
 import { AnalyticsPage } from './components/pages/AnalyticsPage';
 import { SettingsPage } from './components/pages/SettingsPage';
 import { BookingModal } from './components/modals/BookingModal';
@@ -143,7 +140,6 @@ export default function App() {
 
     // Realtime Postgres changes subscription
     const unsubscribeRealtime = subscribeToClinicUpdates((table, _payload) => {
-      console.log(`[REALTIME UPDATE] Change detected in table: ${table}`);
       if (table === 'bookings') {
         getAllBookings().then(setBookings);
         getAllActivities().then(setActivities);
@@ -226,11 +222,11 @@ export default function App() {
     if (success) {
       addToast(
         status === 'Confirmed' ? 'success' : 'warning',
-        `Booking ${bookingId} for ${target?.patientName || 'patient'} marked as ${status}.`
+        `Booking ${bookingId} for ${target?.patient_name || 'patient'} marked as ${status}.`
       );
       await createActivity({
         title: `Booking ${status}`,
-        description: `Appointment for ${target?.patientName || 'patient'} was updated to ${status}`,
+        description: `Appointment for ${target?.patient_name || 'patient'} was updated to ${status}`,
         type: 'booking',
         icon: 'Calendar'
       });
@@ -249,11 +245,11 @@ export default function App() {
     if (success) {
       addToast(
         'success',
-        `Appointment ${bookingId} for ${target?.patientName || 'patient'} rescheduled to ${newDate}${newTime ? ' (' + newTime + ')' : ''}.`
+        `Appointment ${bookingId} for ${target?.patient_name || 'patient'} rescheduled to ${newDate}${newTime ? ' (' + newTime + ')' : ''}.`
       );
       await createActivity({
         title: 'Booking Rescheduled',
-        description: `Appointment for ${target?.patientName || 'patient'} moved to ${newDate}${newTime ? ' at ' + newTime : ''}`,
+        description: `Appointment for ${target?.patient_name || 'patient'} moved to ${newDate}${newTime ? ' at ' + newTime : ''}`,
         type: 'booking',
         icon: 'Calendar'
       });
@@ -295,8 +291,8 @@ export default function App() {
     }
   };
 
-  const handleConfirmResetPassword = (patientId: string, method: 'email' | 'temp-password') => {
-    const p = patients.find(patient => patient.id === patientId);
+  const handleConfirmResetPassword = (patient_id: string, method: 'email' | 'temp-password') => {
+    const p = patients.find(patient => patient.id === patient_id);
     addToast(
       'success',
       method === 'email'
@@ -308,7 +304,7 @@ export default function App() {
   const handleToggleTeamPublished = async (id: string) => {
     const member = teamMembers.find(m => m.id === id);
     if (!member) return;
-    const success = await toggleTeamPublished(id, !member.published);
+    const success = await toggleTeamPublished(id, !member.is_published);
     if (success) {
       addToast('success', `Team member status updated.`);
       const tm = await getAllTeamMembers(); setTeamMembers(tm);
@@ -317,7 +313,7 @@ export default function App() {
     }
   };
 
-  const handleCreateBooking = async (bookingData: Omit<Booking, 'id' | 'createdAt'>) => {
+  const handleCreateBooking = async (bookingData: Omit<Booking, 'id' | 'created_at'>) => {
     const newBooking = await createBooking(bookingData);
     if (newBooking) {
       addToast('success', `Appointment scheduled.`);
@@ -327,7 +323,7 @@ export default function App() {
     }
   };
 
-  const handleCreatePatient = async (patientData: Omit<Patient, 'id' | 'registeredDate' | 'totalVisits' | 'lastVisit' | 'balance'>) => {
+  const handleCreatePatient = async (patientData: Omit<Patient, 'id' | 'created_at' | 'total_visits' | 'last_visit' | 'balance'>) => {
     const newPatient = await createPatient(patientData);
     if (newPatient) {
       addToast('success', `Patient registered.`);
@@ -337,7 +333,7 @@ export default function App() {
     }
   };
 
-  const handleCreateMedicalFile = async (fileData: Omit<MedicalFile, 'id' | 'uploadDate'>) => {
+  const handleCreateMedicalFile = async (fileData: Omit<MedicalFile, 'id' | 'created_at'>) => {
     const newFile = await createMedicalFile(fileData);
     if (newFile) {
       addToast('success', `Medical record uploaded.`);
@@ -350,11 +346,11 @@ export default function App() {
   const handleSaveTeamMember = async (member: TeamMember) => {
     const success = await saveTeamMember(member);
     if (success) {
-      addToast('success', `Doctor profile for ${member.name} saved successfully.`);
+      addToast('success', `Doctor profile for ${member.full_name} saved successfully.`);
       const tm = await getAllTeamMembers();
       setTeamMembers(tm);
     } else {
-      addToast('error', `Failed to save doctor profile for ${member.name}.`);
+      addToast('error', `Failed to save doctor profile for ${member.full_name}.`);
     }
   };
 
@@ -410,7 +406,7 @@ export default function App() {
 
   // Counters for badges
   const pendingBookingsCount = bookings.filter(b => b.status === 'Pending').length;
-  const unreadMessagesCount = conversations.reduce((acc, c) => acc + c.unreadCount, 0);
+  const unreadMessagesCount = conversations.reduce((acc, c) => acc + c.unread_count, 0);
   const unreviewedFilesCount = medicalFiles.filter(f => !f.reviewed).length;
 
   return (
@@ -532,8 +528,8 @@ export default function App() {
               />
             )}
 
-            {activeTab === 'reviews' && (
-              <ReviewsPage
+            {activeTab === 'testimonials' && (
+              <TestimonialsPage
                 searchQuery={searchQuery}
                 onToast={(type, msg) => addToast(type, msg)}
               />
@@ -596,6 +592,7 @@ export default function App() {
         onConfirmReset={handleConfirmResetPassword}
       />
 
+      <StaffAssistant />
       <LogoutModal
         isOpen={isLogoutModalOpen}
         adminProfile={adminProfile}

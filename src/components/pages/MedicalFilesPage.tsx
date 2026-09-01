@@ -44,10 +44,10 @@ export const MedicalFilesPage: React.FC<MedicalFilesPageProps> = ({
     const matchesCategory = selectedCategory === 'All' || f.category === selectedCategory;
     const q = searchQuery.toLowerCase();
     const matchesQuery = !q ||
-      f.patientName.toLowerCase().includes(q) ||
-      f.fileTitle.toLowerCase().includes(q) ||
-      f.uploadedBy.toLowerCase().includes(q) ||
-      f.patientId.toLowerCase().includes(q);
+      f.patient_name.toLowerCase().includes(q) ||
+      f.title.toLowerCase().includes(q) ||
+      f.uploaded_by.toLowerCase().includes(q) ||
+      f.patient_id.toLowerCase().includes(q);
     return matchesCategory && matchesQuery;
   });
 
@@ -156,18 +156,18 @@ export const MedicalFilesPage: React.FC<MedicalFilesPageProps> = ({
                   >
                     {/* Patient Name */}
                     <td className="py-3.5 px-4">
-                      <div className="font-bold text-slate-900">{f.patientName}</div>
-                      <div className="text-[11px] text-slate-500 font-mono">{f.patientId}</div>
+                      <div className="font-bold text-slate-900">{f.patient_name}</div>
+                      <div className="text-[11px] text-slate-500 font-mono">{f.patient_id}</div>
                     </td>
 
                     {/* File Title */}
                     <td className="py-3.5 px-4">
                       <div className="font-bold text-slate-900 flex items-center gap-1.5">
                         <FileText className="w-4 h-4 text-blue-600 shrink-0" />
-                        <span>{f.fileTitle}</span>
+                        <span>{f.title}</span>
                       </div>
                       <div className="text-[10px] text-slate-400 mt-0.5">
-                        {f.fileType} • {f.fileSize}
+                        {f.file_type} • {f.file_size}
                       </div>
                     </td>
 
@@ -178,8 +178,8 @@ export const MedicalFilesPage: React.FC<MedicalFilesPageProps> = ({
 
                     {/* Date */}
                     <td className="py-3.5 px-4">
-                      <div className="font-bold text-slate-900">{f.uploadDate}</div>
-                      <div className="text-[11px] text-slate-500">By {f.uploadedBy}</div>
+                      <div className="font-bold text-slate-900">{f.created_at}</div>
+                      <div className="text-[11px] text-slate-500">By {f.uploaded_by}</div>
                     </td>
 
                     {/* Reviewed Toggle (Interactive!) */}
@@ -223,7 +223,7 @@ export const MedicalFilesPage: React.FC<MedicalFilesPageProps> = ({
                         </button>
                         <button
                           id={`download-file-btn-${f.id}`}
-                          onClick={() => onShowToast ? onShowToast('success', `Downloading ${f.fileTitle} (${f.fileSize})...`) : undefined}
+                          onClick={() => onShowToast ? onShowToast('success', `Downloading ${f.title} (${f.file_size})...`) : undefined}
                           className="bg-slate-100 hover:bg-slate-200 text-slate-700 px-2 py-1.5 rounded-md text-xs font-semibold border border-slate-200 transition-colors cursor-pointer"
                           title="Download File"
                         >
@@ -246,7 +246,7 @@ export const MedicalFilesPage: React.FC<MedicalFilesPageProps> = ({
             <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-900 text-white">
               <div className="flex items-center gap-2">
                 <FileText className="w-5 h-5 text-blue-400" />
-                <h3 className="text-sm font-bold">{previewFile.fileTitle}</h3>
+                <h3 className="text-sm font-bold">{previewFile.title}</h3>
               </div>
               <button
                 onClick={() => setPreviewFile(null)}
@@ -260,19 +260,19 @@ export const MedicalFilesPage: React.FC<MedicalFilesPageProps> = ({
               {/* Mock Radiograph canvas or report viewer */}
               <div className="w-full h-48 bg-slate-950 rounded-lg flex flex-col items-center justify-center text-slate-400 border border-slate-800 p-4 text-center">
                 <FileCheck className="w-12 h-12 text-blue-500 mb-2 opacity-80" />
-                <span className="text-sm font-mono text-slate-200 font-bold">{previewFile.fileTitle}</span>
+                <span className="text-sm font-mono text-slate-200 font-bold">{previewFile.title}</span>
                 <span className="text-[11px] text-slate-500 mt-1">
-                  High-resolution Diagnostic Render ({previewFile.fileType})
+                  High-resolution Diagnostic Render ({previewFile.file_type})
                 </span>
                 <span className="text-[10px] text-emerald-400 mt-2 bg-emerald-950/80 px-2 py-0.5 rounded border border-emerald-800">
-                  DICOM 3.0 Verified • Patient: {previewFile.patientName}
+                  DICOM 3.0 Verified • Patient: {previewFile.patient_name}
                 </span>
               </div>
 
               <div className="grid grid-cols-2 gap-3 pt-2">
                 <div>
                   <span className="font-bold text-slate-500 uppercase text-[10px]">Patient:</span>
-                  <div className="font-bold text-slate-900">{previewFile.patientName} ({previewFile.patientId})</div>
+                  <div className="font-bold text-slate-900">{previewFile.patient_name} ({previewFile.patient_id})</div>
                 </div>
                 <div>
                   <span className="font-bold text-slate-500 uppercase text-[10px]">Category:</span>
@@ -283,11 +283,11 @@ export const MedicalFilesPage: React.FC<MedicalFilesPageProps> = ({
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <span className="font-bold text-slate-500 uppercase text-[10px]">Uploaded By:</span>
-                  <div className="font-semibold text-slate-800">{previewFile.uploadedBy}</div>
+                  <div className="font-semibold text-slate-800">{previewFile.uploaded_by}</div>
                 </div>
                 <div>
                   <span className="font-bold text-slate-500 uppercase text-[10px]">Upload Date:</span>
-                  <div className="font-semibold text-slate-800">{previewFile.uploadDate}</div>
+                  <div className="font-semibold text-slate-800">{previewFile.created_at}</div>
                 </div>
               </div>
 
@@ -342,7 +342,7 @@ export const MedicalFilesPage: React.FC<MedicalFilesPageProps> = ({
         <MedicalFilePrintModal
           file={printModalFile}
           files={isPrintBatchOpen ? filteredFiles : undefined}
-          patient={patients.find(p => p.id === printModalFile?.patientId)}
+          patient={patients.find(p => p.id === printModalFile?.patient_id)}
           onClose={() => {
             setPrintModalFile(null);
             setIsPrintBatchOpen(false);

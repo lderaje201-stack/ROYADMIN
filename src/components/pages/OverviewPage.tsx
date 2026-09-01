@@ -99,7 +99,7 @@ export const OverviewPage: React.FC<OverviewPageProps> = ({
           </div>
           <h2 className="text-xl font-bold tracking-tight text-slate-900">Good day, {adminProfile?.name || 'Administrator'}</h2>
           <p className="text-xs text-slate-500 mt-1 max-w-xl leading-relaxed">
-            You have <span className="text-rose-600 font-semibold">{pendingBookings} pending booking requests</span> and <span className="text-rose-600 font-semibold">{unreadMessages} unread patient messages</span> waiting for staff review.
+            You have <span className="text-rose-600 font-semibold">{pendingBookings} pending booking requests</span> and <span className="text-rose-600 font-semibold">{unreadMessages} unread patient messages</span> waiting for staff testimonial.
           </p>
         </div>
 
@@ -188,11 +188,11 @@ export const OverviewPage: React.FC<OverviewPageProps> = ({
           <div className="mt-4 flex items-baseline justify-between">
             <span className="text-2xl font-bold text-slate-900">{unreviewedFiles}</span>
             <span className="text-[11px] text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded-full font-medium border border-emerald-200/60">
-              Pending review
+              Pending testimonial
             </span>
           </div>
           <div className="mt-4 pt-3 border-t border-neutral-100 flex items-center justify-between text-[11px] text-slate-500 font-medium">
-            <span>Review diagnostic files</span>
+            <span>Testimonial diagnostic files</span>
             <ArrowUpRight className="w-3.5 h-3.5 text-slate-400 group-hover:text-emerald-600 transition-colors" />
           </div>
         </div>
@@ -255,26 +255,26 @@ export const OverviewPage: React.FC<OverviewPageProps> = ({
                   className="flex items-center justify-between p-4 bg-slate-50/70 border border-slate-200/60 rounded-xl hover:bg-slate-50 transition-all"
                 >
                   <div className="flex items-center gap-3.5">
-                    {(b.patientAvatar && b.patientAvatar.trim() !== '') ? (
+                    {(b.patient_avatar && b.patient_avatar.trim() !== '') ? (
                       <img
-                        src={b.patientAvatar}
-                        alt={b.patientName}
+                        src={b.patient_avatar}
+                        alt={b.patient_name}
                         className="w-9 h-9 rounded-full object-cover border border-slate-200"
                       />
                     ) : (
                       <div className="w-9 h-9 rounded-full bg-slate-200/80 text-slate-700 font-bold flex items-center justify-center text-xs">
-                        {b.patientName.charAt(0)}
+                        {b.patient_name.charAt(0)}
                       </div>
                     )}
                     <div>
                       <div className="flex items-center gap-2">
-                        <span className="text-xs font-bold text-slate-900">{b.patientName}</span>
+                        <span className="text-xs font-bold text-slate-900">{b.patient_name}</span>
                         <span className="text-[10px] text-slate-500 bg-slate-200/60 px-1.5 py-0.5 rounded font-medium">
-                          {b.roomNumber}
+                          {b.room_number}
                         </span>
                       </div>
                       <div className="text-[11px] text-slate-600 font-medium mt-0.5">{b.service}</div>
-                      <div className="text-[10px] text-slate-400">With {b.doctorName}</div>
+                      <div className="text-[10px] text-slate-400">With {b.doctor_name}</div>
                     </div>
                   </div>
                   <div className="text-right">

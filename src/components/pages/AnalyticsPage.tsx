@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useMemo } from 'react';
-import { Booking, Patient, Review } from '../../types';
-import { getAllReviews, isSupabaseConfigured, supabase } from '../../lib/supabase';
+import { Booking, Patient, Testimonial } from '../../types';
+import { getAllTestimonials } from '../../services/TestimonialService';
+import { isSupabaseConfigured, supabase } from '../../lib/supabase';
 import { 
   TrendingUp, 
   Calendar, 
@@ -42,7 +43,7 @@ export const AnalyticsPage: React.FC<AnalyticsPageProps> = ({
   patients: initialPatients,
   onNavigateTab
 }) => {
-  const [reviews, setReviews] = useState<Review[]>([]);
+  const [testimonials, setReviews] = useState<Testimonial[]>([]);
   const [bookings, setBookings] = useState<Booking[]>(initialBookings);
   const [patients, setPatients] = useState<Patient[]>(initialPatients);
   const [loading, setLoading] = useState(false);
@@ -52,10 +53,9 @@ export const AnalyticsPage: React.FC<AnalyticsPageProps> = ({
   const loadData = async () => {
     setLoading(true);
     try {
-      const fetchedReviews = await getAllReviews();
+      const fetchedReviews = await getAllTestimonials();
       setReviews(fetchedReviews);
     } catch (e) {
-      console.warn('Analytics data fetch exception:', e);
     } finally {
       setLoading(false);
     }
@@ -76,8 +76,8 @@ export const AnalyticsPage: React.FC<AnalyticsPageProps> = ({
     const countsByDate: Record<string, number> = {};
 
     bookings.forEach(b => {
-      // Determine booking date (prefer createdAt date or booking date)
-      let rawDate = b.createdAt;
+      // Determine booking date (prefer created_at date or booking date)
+      let rawDate = b.created_at;
       if (!rawDate || rawDate.includes('Just now') || rawDate.length < 8) {
         rawDate = b.date;
       }
@@ -139,7 +139,7 @@ export const AnalyticsPage: React.FC<AnalyticsPageProps> = ({
     const signupsMap: Record<string, number> = {};
 
     patients.forEach(p => {
-      let dateKey = p.registeredDate || '2026-07-01';
+      let dateKey = p.created_at || '2026-07-01';
       if (dateKey.includes('T')) dateKey = dateKey.split('T')[0];
       
       signupsMap[dateKey] = (signupsMap[dateKey] || 0) + 1;
@@ -164,9 +164,9 @@ export const AnalyticsPage: React.FC<AnalyticsPageProps> = ({
     });
   }, [patients]);
 
-  // D. Stat Card: Average review rating and total reviews
+  // D. Stat Card: Average testimonial rating and total testimonials
   const reviewStats = useMemo(() => {
-    const total = reviews.length;
+    const total = testimonials.length;
     if (total === 0) {
       return {
         total: 0,
@@ -176,12 +176,12 @@ export const AnalyticsPage: React.FC<AnalyticsPageProps> = ({
       };
     }
 
-    const sum = reviews.reduce((acc, r) => acc + (r.rating || 5), 0);
+    const sum = testimonials.reduce((acc, r) => acc + (r.rating || 5), 0);
     const avg = (sum / total).toFixed(1);
     
     const breakdown = { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 };
     let fiveStarCount = 0;
-    reviews.forEach(r => {
+    testimonials.forEach(r => {
       const rNum = Math.min(5, Math.max(1, Math.round(r.rating || 5)));
       breakdown[rNum as keyof typeof breakdown] = (breakdown[rNum as keyof typeof breakdown] || 0) + 1;
       if (rNum === 5) fiveStarCount++;
@@ -195,7 +195,7 @@ export const AnalyticsPage: React.FC<AnalyticsPageProps> = ({
       fiveStarPercentage: fiveStarPct,
       ratingBreakdown: breakdown
     };
-  }, [reviews]);
+  }, [testimonials]);
 
   return (
     <div id="admin-analytics-page" className="p-8 space-y-6 max-w-7xl mx-auto">
@@ -293,7 +293,7 @@ export const AnalyticsPage: React.FC<AnalyticsPageProps> = ({
           <p className="text-[11px] text-slate-400 mt-1">Invisalign, Implants, Laser & Checkups</p>
         </div>
 
-        {/* Stat Card 4 (Requirement 2d): Average Review Rating Stat Card */}
+        {/* Stat Card 4 (Requirement 2d): Average Testimonial Rating Stat Card */}
         <div 
           id="stat-card-average-rating"
           className="bg-white p-6 rounded-2xl border border-neutral-200/60 shadow-[0_2px_10px_-3px_rgba(0,0,0,0.07)] relative overflow-hidden"
@@ -305,7 +305,7 @@ export const AnalyticsPage: React.FC<AnalyticsPageProps> = ({
             </span>
             {onNavigateTab && (
               <button 
-                onClick={() => onNavigateTab('reviews')}
+                onClick={() => onNavigateTab('testimonials')}
                 className="text-[10px] text-slate-700 font-bold hover:underline"
               >
                 Manage →
@@ -322,7 +322,7 @@ export const AnalyticsPage: React.FC<AnalyticsPageProps> = ({
           </div>
 
           <div className="mt-1 flex items-center justify-between text-[11px] text-amber-800 font-medium">
-            <span>Based on {reviewStats.total} patient reviews</span>
+            <span>Based on {reviewStats.total} patient testimonials</span>
             <div className="flex text-amber-400">
               {[1, 2, 3, 4, 5].map((s) => (
                 <Star
@@ -465,7 +465,7 @@ export const AnalyticsPage: React.FC<AnalyticsPageProps> = ({
         </div>
       </div>
 
-      {/* Grid Row 2: Chart C (New Patient Signups Over Time) + Detailed Review Breakdown */}
+      {/* Grid Row 2: Chart C (New Patient Signups Over Time) + Detailed Testimonial Breakdown */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         {/* Chart C: New Patient Signups Over Time */}
         <div className="lg:col-span-8 bg-white p-6 rounded-2xl border border-neutral-200/60 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.04)]">
@@ -537,7 +537,7 @@ export const AnalyticsPage: React.FC<AnalyticsPageProps> = ({
           </div>
         </div>
 
-        {/* Detailed Review Breakdown Box */}
+        {/* Detailed Testimonial Breakdown Box */}
         <div className="lg:col-span-4 bg-white p-6 rounded-2xl border border-neutral-200/60 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.04)] flex flex-col justify-between">
           <div>
             <div className="flex items-center justify-between mb-3">
@@ -581,11 +581,11 @@ export const AnalyticsPage: React.FC<AnalyticsPageProps> = ({
 
           <div className="pt-4 border-t border-slate-100 bg-slate-50/70 p-3 rounded-lg flex items-center justify-between">
             <div className="text-xs text-slate-600">
-              <span className="font-bold text-slate-900">{reviews.filter(r => r.is_featured).length} Reviews</span> published live on website
+              <span className="font-bold text-slate-900">{testimonials.filter(r => r.is_featured).length} Testimonials</span> is_published live on website
             </div>
             {onNavigateTab && (
               <button
-                onClick={() => onNavigateTab('reviews')}
+                onClick={() => onNavigateTab('testimonials')}
                 className="px-3 py-1 bg-slate-900 hover:bg-black text-white text-xs font-bold rounded-md transition-colors shadow-2xs cursor-pointer"
               >
                 Manage

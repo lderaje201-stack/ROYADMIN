@@ -138,7 +138,7 @@ export const TopBar: React.FC<TopBarProps> = ({
     {
       id: 'N-3',
       title: 'New CBCT 3D Scan Uploaded',
-      description: 'Patient Tariq Al-Hamad scan ready for review',
+      description: 'Patient Tariq Al-Hamad scan ready for testimonial',
       time: '1h ago',
       type: 'success',
       tab: 'medical-files' as NavigationTab
@@ -150,16 +150,16 @@ export const TopBar: React.FC<TopBarProps> = ({
 
   const filteredPatients = patients.filter(p => 
     !trimmedSearch || 
-    p.name.toLowerCase().includes(trimmedSearch) || 
+    p.full_name.toLowerCase().includes(trimmedSearch) || 
     p.phone.includes(trimmedSearch) || 
     p.id.toLowerCase().includes(trimmedSearch)
   );
 
   const filteredBookings = bookings.filter(b => 
     !trimmedSearch || 
-    b.patientName.toLowerCase().includes(trimmedSearch) || 
+    b.patient_name.toLowerCase().includes(trimmedSearch) || 
     b.service.toLowerCase().includes(trimmedSearch) || 
-    b.doctorName.toLowerCase().includes(trimmedSearch) || 
+    b.doctor_name.toLowerCase().includes(trimmedSearch) || 
     b.id.toLowerCase().includes(trimmedSearch)
   );
 
@@ -172,9 +172,9 @@ export const TopBar: React.FC<TopBarProps> = ({
 
   const filteredFiles = medicalFiles.filter(f => 
     !trimmedSearch || 
-    f.fileTitle.toLowerCase().includes(trimmedSearch) || 
-    f.patientName.toLowerCase().includes(trimmedSearch) || 
-    f.fileType.toLowerCase().includes(trimmedSearch) || 
+    f.title.toLowerCase().includes(trimmedSearch) || 
+    f.patient_name.toLowerCase().includes(trimmedSearch) || 
+    f.file_type.toLowerCase().includes(trimmedSearch) || 
     f.id.toLowerCase().includes(trimmedSearch)
   );
 
@@ -276,7 +276,7 @@ export const TopBar: React.FC<TopBarProps> = ({
                             <button
                               key={p.id}
                               onClick={() => {
-                                setSearchQuery(p.name);
+                                setSearchQuery(p.full_name);
                                 onNavigateTab('patients');
                                 setIsSearchOpen(false);
                               }}
@@ -284,10 +284,10 @@ export const TopBar: React.FC<TopBarProps> = ({
                             >
                               <div className="flex items-center gap-2.5">
                                 <div className="w-7 h-7 rounded-full bg-slate-900 text-white font-bold text-[11px] flex items-center justify-center shrink-0">
-                                  {p.name.charAt(0)}
+                                  {p.full_name.charAt(0)}
                                 </div>
                                 <div>
-                                  <div className="text-xs font-semibold text-slate-900">{p.name}</div>
+                                  <div className="text-xs font-semibold text-slate-900">{p.full_name}</div>
                                   <div className="text-[10px] text-slate-500">{p.phone} • {p.email}</div>
                                 </div>
                               </div>
@@ -307,14 +307,14 @@ export const TopBar: React.FC<TopBarProps> = ({
                             <button
                               key={b.id}
                               onClick={() => {
-                                setSearchQuery(b.patientName);
+                                setSearchQuery(b.patient_name);
                                 onNavigateTab('bookings');
                                 setIsSearchOpen(false);
                               }}
                               className="w-full text-left p-2 hover:bg-slate-50 rounded-xl transition-colors flex items-center justify-between cursor-pointer group"
                             >
                               <div>
-                                <div className="text-xs font-semibold text-slate-900">{b.patientName} ({b.id})</div>
+                                <div className="text-xs font-semibold text-slate-900">{b.patient_name} ({b.id})</div>
                                 <div className="text-[10px] text-slate-500">{b.service} • {b.date} at {b.time}</div>
                               </div>
                               <ChevronRight className="w-3.5 h-3.5 text-slate-300 group-hover:text-slate-600 transition-colors" />
@@ -340,10 +340,10 @@ export const TopBar: React.FC<TopBarProps> = ({
                               className="w-full text-left p-2 hover:bg-slate-50 rounded-xl transition-colors flex items-center justify-between cursor-pointer group"
                             >
                               <div className="flex items-center gap-2.5">
-                                <img src={(d.photoUrl && d.photoUrl.trim() !== '') ? d.photoUrl : "https://images.unsplash.com/photo-1559839734-2b71ea197ec2?w=100&auto=format&fit=crop&q=80"} alt={d.name} className="w-7 h-7 rounded-full object-cover border border-slate-200" />
+                                <img src={(d.photo_url && d.photo_url.trim() !== '') ? d.photo_url : "https://images.unsplash.com/photo-1559839734-2b71ea197ec2?w=100&auto=format&fit=crop&q=80"} alt={d.name} className="w-7 h-7 rounded-full object-cover border border-slate-200" />
                                 <div>
                                   <div className="text-xs font-semibold text-slate-900">{d.name}</div>
-                                  <div className="text-[10px] text-slate-500">{d.specialty} • {d.roomNumber}</div>
+                                  <div className="text-[10px] text-slate-500">{d.specialty} • {d.room_number}</div>
                                 </div>
                               </div>
                               <ChevronRight className="w-3.5 h-3.5 text-slate-300 group-hover:text-slate-600 transition-colors" />
@@ -362,15 +362,15 @@ export const TopBar: React.FC<TopBarProps> = ({
                             <button
                               key={f.id}
                               onClick={() => {
-                                setSearchQuery(f.patientName);
+                                setSearchQuery(f.patient_name);
                                 onNavigateTab('medical-files');
                                 setIsSearchOpen(false);
                               }}
                               className="w-full text-left p-2 hover:bg-slate-50 rounded-xl transition-colors flex items-center justify-between cursor-pointer group"
                             >
                               <div>
-                                <div className="text-xs font-semibold text-slate-900">{f.fileTitle}</div>
-                                <div className="text-[10px] text-slate-500">{f.patientName} • {f.fileType}</div>
+                                <div className="text-xs font-semibold text-slate-900">{f.title}</div>
+                                <div className="text-[10px] text-slate-500">{f.patient_name} • {f.file_type}</div>
                               </div>
                               <ChevronRight className="w-3.5 h-3.5 text-slate-300 group-hover:text-slate-600 transition-colors" />
                             </button>

@@ -1,6 +1,6 @@
 import React from 'react';
 import { ShieldAlert, LogOut, ArrowLeft, Lock } from 'lucide-react';
-import { signOutAdmin } from '../../lib/supabase';
+import { signOutAdmin } from '../../services/AuthService';
 
 interface UnauthorizedPageProps {
   userEmail?: string;

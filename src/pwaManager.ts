@@ -18,21 +18,18 @@ export function initPWA() {
       navigator.serviceWorker
         .register('/sw.js')
         .then((reg) => {
-          console.log('[PWA] Service Worker registered successfully:', reg.scope);
 
           reg.addEventListener('updatefound', () => {
             const newWorker = reg.installing;
             if (newWorker) {
               newWorker.addEventListener('statechange', () => {
                 if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                  console.log('[PWA] New version available! Ready to update.');
                 }
               });
             }
           });
         })
         .catch((err) => {
-          console.warn('[PWA] Service Worker registration failed:', err);
         });
     });
   }
@@ -42,14 +39,12 @@ export function initPWA() {
     e.preventDefault();
     deferredPrompt = e as PWAInstallPromptEvent;
     notifyInstallListeners(true);
-    console.log('[PWA] App is ready for installation prompt');
   });
 
   // Listen for appinstalled
   window.addEventListener('appinstalled', () => {
     deferredPrompt = null;
     notifyInstallListeners(false);
-    console.log('[PWA] ROYADMIN was installed successfully');
   });
 
   // Network connection status listeners
@@ -68,7 +63,6 @@ export function canInstallPWA(): boolean {
 
 export async function promptPWAInstall(): Promise<boolean> {
   if (!deferredPrompt) {
-    console.log('[PWA] Install prompt unavailable or app already installed.');
     return false;
   }
 
@@ -79,7 +73,6 @@ export async function promptPWAInstall(): Promise<boolean> {
     notifyInstallListeners(false);
     return choice.outcome === 'accepted';
   } catch (err) {
-    console.warn('[PWA] Install prompt error:', err);
     return false;
   }
 }

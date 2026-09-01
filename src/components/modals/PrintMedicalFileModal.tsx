@@ -54,19 +54,19 @@ export const PrintMedicalFileModal: React.FC<PrintMedicalFileModalProps> = ({
 
   // Find associated patient data
   const primaryFile = activeFiles[0];
-  const matchedPatient = patient || patientsList.find(p => p.id === primaryFile?.patientId) || {
-    id: primaryFile?.patientId || 'PT-8801',
-    name: primaryFile?.patientName || 'Sarah Al-Mansoor',
+  const matchedPatient = patient || patientsList.find(p => p.id === primaryFile?.patient_id) || {
+    id: primaryFile?.patient_id || 'PT-8801',
+    full_name: primaryFile?.patient_name || 'Sarah Al-Mansoor',
     phone: '+962 79 123 4567',
     email: 'patient@example.com',
-    registeredDate: '2025-03-14',
+    created_at: '2025-03-14',
     gender: 'Female',
     age: 32,
-    lastVisit: '2026-07-28',
-    totalVisits: 6,
-    assignedDoctor: 'Dr. Faisal Al-Sabah',
+    last_visit: '2026-07-28',
+    total_visits: 6,
+    assigned_doctor: 'Dr. Faisal Al-Sabah',
     status: 'Active',
-    medicalAlerts: ['Penicillin Sensitivity (Mild)', 'Hypertension Controlled'],
+    medical_alerts: ['Penicillin Sensitivity (Mild)', 'Hypertension Controlled'],
     balance: 0
   } as Patient;
 
@@ -95,7 +95,7 @@ export const PrintMedicalFileModal: React.FC<PrintMedicalFileModalProps> = ({
 
   const handleDownloadPDF = () => {
     if (onShowToast) {
-      onShowToast('success', `Generating official PDF record for ${primaryFile ? primaryFile.fileTitle : 'Patient File Chart'}...`);
+      onShowToast('success', `Generating official PDF record for ${primaryFile ? primaryFile.title : 'Patient File Chart'}...`);
     }
   };
 
@@ -114,7 +114,7 @@ export const PrintMedicalFileModal: React.FC<PrintMedicalFileModalProps> = ({
             <div>
               <h2 className="text-base font-bold tracking-tight">Print Medical File Record</h2>
               <p className="text-xs text-slate-400">
-                Official Clean Layout • {matchedPatient.name} ({matchedPatient.id})
+                Official Clean Layout • {matchedPatient.full_name} ({matchedPatient.id})
               </p>
             </div>
           </div>
@@ -273,7 +273,7 @@ export const PrintMedicalFileModal: React.FC<PrintMedicalFileModalProps> = ({
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
                   <div>
                     <span className="text-[10px] font-bold text-slate-500 uppercase block">Full Patient Name</span>
-                    <span className="font-bold text-slate-900 text-sm">{matchedPatient.name}</span>
+                    <span className="font-bold text-slate-900 text-sm">{matchedPatient.full_name}</span>
                   </div>
 
                   <div>
@@ -283,7 +283,7 @@ export const PrintMedicalFileModal: React.FC<PrintMedicalFileModalProps> = ({
 
                   <div>
                     <span className="text-[10px] font-bold text-slate-500 uppercase block">Primary Physician</span>
-                    <span className="font-semibold text-slate-800">{matchedPatient.assignedDoctor}</span>
+                    <span className="font-semibold text-slate-800">{matchedPatient.assigned_doctor}</span>
                   </div>
 
                   <div>
@@ -299,8 +299,8 @@ export const PrintMedicalFileModal: React.FC<PrintMedicalFileModalProps> = ({
                     <span>MEDICAL ALERTS / ALLERGIES:</span>
                   </span>
                   <span className="font-medium text-slate-800 truncate">
-                    {matchedPatient.medicalAlerts && matchedPatient.medicalAlerts.length > 0 
-                      ? matchedPatient.medicalAlerts.join(' • ') 
+                    {matchedPatient.medical_alerts && matchedPatient.medical_alerts.length > 0 
+                      ? matchedPatient.medical_alerts.join(' • ') 
                       : 'No Known Medical Allergies (NKDA)'}
                   </span>
                 </div>
@@ -326,7 +326,7 @@ export const PrintMedicalFileModal: React.FC<PrintMedicalFileModalProps> = ({
                       <span className="bg-blue-800 text-white font-mono text-[10px] px-1.5 py-0.5 rounded">
                         #{f.id}
                       </span>
-                      <span>{f.fileTitle}</span>
+                      <span>{f.title}</span>
                     </div>
 
                     <div className="flex items-center gap-2">
@@ -349,17 +349,17 @@ export const PrintMedicalFileModal: React.FC<PrintMedicalFileModalProps> = ({
                   <div className="p-4 grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
                     <div>
                       <span className="text-[10px] font-bold text-slate-500 uppercase block">Format Specs</span>
-                      <span className="font-mono text-slate-800">{f.fileType} ({f.fileSize})</span>
+                      <span className="font-mono text-slate-800">{f.file_type} ({f.file_size})</span>
                     </div>
 
                     <div>
                       <span className="text-[10px] font-bold text-slate-500 uppercase block">Upload Date</span>
-                      <span className="font-semibold text-slate-800">{f.uploadDate}</span>
+                      <span className="font-semibold text-slate-800">{f.created_at}</span>
                     </div>
 
                     <div>
                       <span className="text-[10px] font-bold text-slate-500 uppercase block">Staff Technician</span>
-                      <span className="font-semibold text-slate-800">{f.uploadedBy}</span>
+                      <span className="font-semibold text-slate-800">{f.uploaded_by}</span>
                     </div>
 
                     <div>
@@ -398,9 +398,9 @@ export const PrintMedicalFileModal: React.FC<PrintMedicalFileModalProps> = ({
                           <div className="w-16 h-16 rounded-full bg-blue-900/40 border border-blue-500/50 flex items-center justify-center mb-2">
                             <FileCheck className="w-8 h-8 text-blue-400" />
                           </div>
-                          <span className="font-mono text-xs font-bold text-slate-200">{f.fileTitle}</span>
+                          <span className="font-mono text-xs font-bold text-slate-200">{f.title}</span>
                           <span className="text-[10px] text-slate-400 mt-0.5 font-mono">
-                            Patient: {matchedPatient.name} • Chart #{matchedPatient.id}
+                            Patient: {matchedPatient.full_name} • Chart #{matchedPatient.id}
                           </span>
                         </div>
 

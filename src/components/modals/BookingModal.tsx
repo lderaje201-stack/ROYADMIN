@@ -1,11 +1,12 @@
-import React, { useState } from 'react';
-import { Booking, Patient, TeamMember } from '../../types';
+import React, { useState, useEffect } from 'react';
+import { Booking, Patient, TeamMember, ClinicService, BookingStatus } from '../../types';
+import { getAllServices } from '../../services/ServiceCatalogService';
 import { X, Calendar, Clock, User, Stethoscope, MapPin, FileText } from 'lucide-react';
 
 interface BookingModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSave: (booking: Omit<Booking, 'id' | 'createdAt'>) => void;
+  onSave: (booking: Omit<Booking, 'id' | 'created_at'>) => void;
   patients: Patient[];
   teamMembers: TeamMember[];
 }
@@ -23,12 +24,20 @@ export const BookingModal: React.FC<BookingModalProps> = ({
   const [patientNameInput, setPatientNameInput] = useState(patients[0]?.name || '');
   const [patientPhoneInput, setPatientPhoneInput] = useState(patients[0]?.phone || '');
   const [service, setService] = useState('Orthodontic Consultation (Invisalign)');
-  const [doctorName, setDoctorName] = useState(teamMembers[0]?.name || 'Dr. Faisal Al-Sabah');
+  const [doctor_name, setDoctorName] = useState(teamMembers[0]?.name || 'Dr. Faisal Al-Sabah');
   const [date, setDate] = useState('2026-07-30');
   const [time, setTime] = useState('10:00 AM');
-  const [roomNumber, setRoomNumber] = useState('Suite 101');
+  const [room_number, setRoomNumber] = useState('Suite 101');
+  const [servicesList, setServicesList] = useState<ClinicService[]>([]);
   const [status, setStatus] = useState<'Pending' | 'Confirmed'>('Confirmed');
   const [notes, setNotes] = useState('');
+
+  useEffect(() => {
+    getAllServices().then(data => {
+      setServicesList(data);
+      if (data.length > 0 && !service) setService(data[0].id);
+    });
+  }, []);
 
   const handlePatientSelect = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const pId = e.target.value;
@@ -43,14 +52,14 @@ export const BookingModal: React.FC<BookingModalProps> = ({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     onSave({
-      patientId: selectedPatientId || 'new_patient',
-      patientName: patientNameInput,
-      patientPhone: patientPhoneInput,
+      patient_id: selectedPatientId || 'new_patient',
+      patient_name: patientNameInput,
+      patient_phone: patientPhoneInput,
       service,
-      doctorName,
+      doctor_name,
       date,
       time,
-      roomNumber,
+      room_number,
       status,
       notes
     });
@@ -92,7 +101,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({
               <option value="">-- Custom Patient Entry --</option>
               {patients.map(p => (
                 <option key={p.id} value={p.id}>
-                  {p.name} ({p.phone}) - {p.id}
+                  {p.full_name} ({p.phone}) - {p.id}
                 </option>
               ))}
             </select>
@@ -133,20 +142,17 @@ export const BookingModal: React.FC<BookingModalProps> = ({
                 onChange={e => setService(e.target.value)}
                 className="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-xs text-slate-800 focus:ring-2 focus:ring-blue-600 focus:outline-none"
               >
-                <option value="Orthodontic Consultation (Invisalign)">Orthodontic Consultation (Invisalign)</option>
-                <option value="Dental Implant Placement Phase 1">Dental Implant Placement Phase 1</option>
-                <option value="Laser Teeth Whitening & Polishing">Laser Teeth Whitening & Polishing</option>
-                <option value="Root Canal Treatment (Molar)">Root Canal Treatment (Molar)</option>
-                <option value="Routine Cleaning & Hygiene">Routine Cleaning & Hygiene</option>
-                <option value="Veneers Consultation & Smile Design">Veneers Consultation & Smile Design</option>
-                <option value="Wisdom Tooth Extraction">Wisdom Tooth Extraction</option>
+                {servicesList.length === 0 && <option value="Orthodontic Consultation (Invisalign)">Orthodontic Consultation (Invisalign)</option>}
+                {servicesList.map(s => (
+                  <option key={s.id} value={s.id}>{s.title}</option>
+                ))}
               </select>
             </div>
             <div>
               <label className="block text-xs font-semibold text-slate-700 mb-1">Assigned Dentist</label>
               <select
                 id="booking-doctor-select"
-                value={doctorName}
+                value={doctor_name}
                 onChange={e => setDoctorName(e.target.value)}
                 className="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-xs text-slate-800 focus:ring-2 focus:ring-blue-600 focus:outline-none"
               >
@@ -196,7 +202,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({
                 id="booking-room-input"
                 type="text"
                 required
-                value={roomNumber}
+                value={room_number}
                 onChange={e => setRoomNumber(e.target.value)}
                 className="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-xs text-slate-800 focus:ring-2 focus:ring-blue-600 focus:outline-none"
               />

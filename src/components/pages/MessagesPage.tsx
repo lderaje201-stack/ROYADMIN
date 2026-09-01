@@ -1,6 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { Conversation, Patient, NavigationTab } from '../../types';
-import { uploadMessageAttachment } from '../../lib/supabase';
+import { uploadMessageAttachment } from '../../services/MessagingService';
 import { 
   Send, 
   Search, 
@@ -85,31 +85,31 @@ export const MessagesPage: React.FC<MessagesPageProps> = ({
   
   // Associated patient record
   const activePatient = activeConv 
-    ? patients.find(p => p.id === activeConv.patientId || p.name.toLowerCase() === activeConv.patientName.toLowerCase())
+    ? patients.find(p => p.id === activeConv.patient_id || p.full_name.toLowerCase() === activeConv.patient_name.toLowerCase())
     : null;
 
   // Editable fields state for active patient
   const [editForm, setEditForm] = useState({
-    name: activeConv?.patientName || '',
-    phone: activeConv?.patientPhone || '',
+    name: activeConv?.patient_name || '',
+    phone: activeConv?.patient_phone || '',
     email: activePatient?.email || 'patient@email.com',
-    assignedDoctor: activeConv?.assignedDoctor || 'Dr. Faisal Al-Sabah',
+    assigned_doctor: activeConv?.assigned_doctor || 'Dr. Faisal Al-Sabah',
     age: activePatient?.age || 31,
     gender: activePatient?.gender || 'Female',
-    medicalAlerts: 'Penicillin allergy noted in chart; Prefers morning appointments'
+    medical_alerts: 'Penicillin allergy noted in chart; Prefers morning appointments'
   });
 
   // Sync edit form when active conversation changes
   React.useEffect(() => {
     if (activeConv) {
       setEditForm({
-        name: activeConv.patientName,
-        phone: activeConv.patientPhone,
+        name: activeConv.patient_name,
+        phone: activeConv.patient_phone,
         email: activePatient?.email || 'patient@email.com',
-        assignedDoctor: activeConv.assignedDoctor || 'Dr. Faisal Al-Sabah',
+        assigned_doctor: activeConv.assigned_doctor || 'Dr. Faisal Al-Sabah',
         age: activePatient?.age || 31,
         gender: activePatient?.gender || 'Female',
-        medicalAlerts: 'Penicillin allergy noted in chart; Prefers morning appointments'
+        medical_alerts: 'Penicillin allergy noted in chart; Prefers morning appointments'
       });
       setIsEditingProfile(false);
       setIsAddingDetail(false);
@@ -119,22 +119,22 @@ export const MessagesPage: React.FC<MessagesPageProps> = ({
   // Mark all unread messages in the active thread as read when opened/viewed
   React.useEffect(() => {
     if (activeConv && onMarkAsRead) {
-      const hasUnread = activeConv.unreadCount > 0 || activeConv.messages.some(m => m.sender === 'patient' && !m.is_read);
+      const hasUnread = activeConv.unread_count > 0 || activeConv.messages.some(m => m.sender === 'patient' && !m.is_read);
       if (hasUnread) {
         onMarkAsRead(activeConv.id);
       }
     }
-  }, [selectedConvId, activeConv?.id, activeConv?.unreadCount, activeConv?.messages.length]);
+  }, [selectedConvId, activeConv?.id, activeConv?.unread_count, activeConv?.messages.length]);
 
   // Filter conversations based on dedicated profile search or global topbar search
   const filteredConvs = conversations.filter((c) => {
     const query = (profileSearchQuery || searchQuery).toLowerCase().trim();
     if (!query) return true;
     return (
-      c.patientName.toLowerCase().includes(query) ||
-      c.patientId.toLowerCase().includes(query) ||
-      c.patientPhone.toLowerCase().includes(query) ||
-      c.lastMessage.toLowerCase().includes(query)
+      c.patient_name.toLowerCase().includes(query) ||
+      c.patient_id.toLowerCase().includes(query) ||
+      c.patient_phone.toLowerCase().includes(query) ||
+      c.last_message.toLowerCase().includes(query)
     );
   });
 
@@ -177,7 +177,6 @@ export const MessagesPage: React.FC<MessagesPageProps> = ({
       const resUrl = await uploadMessageAttachment(selectedFile);
       if (resUrl) {
         uploadedPublicUrl = resUrl;
-        console.log('[STAFF SEND MESSAGE] Attachment uploaded successfully BEFORE insert. Public URL:', uploadedPublicUrl);
       } else {
         if (onShowToast) onShowToast('error', 'Failed to upload image attachment.');
         setIsUploadingAttachment(false);
@@ -204,7 +203,7 @@ export const MessagesPage: React.FC<MessagesPageProps> = ({
     e.preventDefault();
     if (!newDetailLabel.trim() || !newDetailValue.trim() || !activeConv) return;
 
-    const targetKey = activeConv.patientId || activeConv.id;
+    const targetKey = activeConv.patient_id || activeConv.id;
     const currentList = customDetailsMap[targetKey] || [];
     const newEntry: CustomPatientDetail = {
       id: Date.now().toString(),
@@ -228,7 +227,7 @@ export const MessagesPage: React.FC<MessagesPageProps> = ({
 
   const handleDeleteCustomDetail = (detailId: string) => {
     if (!activeConv) return;
-    const targetKey = activeConv.patientId || activeConv.id;
+    const targetKey = activeConv.patient_id || activeConv.id;
     const currentList = customDetailsMap[targetKey] || [];
     setCustomDetailsMap({
       ...customDetailsMap,
@@ -246,7 +245,7 @@ export const MessagesPage: React.FC<MessagesPageProps> = ({
     "Thank you for contacting Royal Dental Center. We have updated your chart notes."
   ];
 
-  const currentCustomDetails = activeConv ? (customDetailsMap[activeConv.patientId] || customDetailsMap[activeConv.id] || []) : [];
+  const currentCustomDetails = activeConv ? (customDetailsMap[activeConv.patient_id] || customDetailsMap[activeConv.id] || []) : [];
 
   return (
     <div id="messages-page" className="h-full w-full flex bg-white overflow-hidden relative">
@@ -313,7 +312,7 @@ export const MessagesPage: React.FC<MessagesPageProps> = ({
                     setSelectedConvId(conv.id);
                     setShowTemplatesDropdown(false);
                   }}
-                  title={conv.patientName}
+                  title={conv.patient_name}
                   className={`w-full text-left flex items-center p-3 cursor-pointer transition-colors ${
                     isSelected
                       ? 'bg-black/50 text-white font-semibold backdrop-blur-xs ring-1 ring-black/20 shadow-xs'
@@ -323,11 +322,11 @@ export const MessagesPage: React.FC<MessagesPageProps> = ({
                   {/* Fixed-Size Avatar Container */}
                   <div className="relative shrink-0 flex items-center justify-center w-10 h-10">
                     <img
-                      src={(conv.patientAvatar && conv.patientAvatar.trim() !== '') ? conv.patientAvatar : "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&auto=format&fit=crop&q=80"}
-                      alt={conv.patientName}
+                      src={(conv.patient_avatar && conv.patient_avatar.trim() !== '') ? conv.patient_avatar : "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&auto=format&fit=crop&q=80"}
+                      alt={conv.patient_name}
                       className="w-10 h-10 rounded-full object-cover border border-slate-200/80 shrink-0"
                     />
-                    {conv.unreadCount > 0 && (
+                    {conv.unread_count > 0 && (
                       <span className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 bg-rose-500 rounded-full ring-2 ring-white animate-pulse" />
                     )}
                   </div>
@@ -336,21 +335,21 @@ export const MessagesPage: React.FC<MessagesPageProps> = ({
                   <div className="min-w-0 flex-1 ml-3">
                     <div className="flex items-center justify-between gap-1">
                       <span className={`text-xs truncate ${isSelected ? 'font-bold text-white' : 'font-semibold text-slate-900'}`}>
-                        {conv.patientName}
+                        {conv.patient_name}
                       </span>
                       <div className="flex items-center gap-1.5 shrink-0">
                         <span className={`text-[10px] font-medium ${isSelected ? 'text-slate-200' : 'text-slate-400'}`}>
-                          {conv.lastTimestamp}
+                          {conv.last_timestamp}
                         </span>
-                        {conv.unreadCount > 0 && (
+                        {conv.unread_count > 0 && (
                           <span className="px-1.5 py-0.2 text-[10px] font-bold bg-rose-500 text-white rounded-full min-w-[18px] text-center shadow-2xs shrink-0 animate-pulse">
-                            {conv.unreadCount}
+                            {conv.unread_count}
                           </span>
                         )}
                       </div>
                     </div>
                     <p className={`text-[11px] truncate mt-0.5 ${isSelected ? 'text-slate-200' : 'text-slate-500'}`}>
-                      {conv.lastMessage}
+                      {conv.last_message}
                     </p>
                   </div>
                 </button>
@@ -372,21 +371,21 @@ export const MessagesPage: React.FC<MessagesPageProps> = ({
               title="Click to view/edit patient profile details"
             >
               <img
-                src={(activeConv.patientAvatar && activeConv.patientAvatar.trim() !== '') ? activeConv.patientAvatar : "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&auto=format&fit=crop&q=80"}
-                alt={activeConv.patientName}
+                src={(activeConv.patient_avatar && activeConv.patient_avatar.trim() !== '') ? activeConv.patient_avatar : "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&auto=format&fit=crop&q=80"}
+                alt={activeConv.patient_name}
                 className="w-10 h-10 rounded-full object-cover border border-slate-200 shrink-0"
               />
               <div>
                 <div className="flex items-center gap-2">
-                  <h3 className="text-sm font-bold text-slate-900 group-hover:text-slate-900">{activeConv.patientName}</h3>
+                  <h3 className="text-sm font-bold text-slate-900 group-hover:text-slate-900">{activeConv.patient_name}</h3>
                   <span className="text-[10px] font-mono font-semibold bg-slate-100 text-slate-700 px-2 py-0.5 rounded-md border border-slate-200/80">
-                    {activeConv.patientId}
+                    {activeConv.patient_id}
                   </span>
                 </div>
                 <div className="text-xs text-slate-500 flex items-center gap-2 mt-0.5">
-                  <span>{activeConv.patientPhone}</span>
+                  <span>{activeConv.patient_phone}</span>
                   <span>•</span>
-                  <span>{editForm.assignedDoctor || 'Dental Clinic Desk'}</span>
+                  <span>{editForm.assigned_doctor || 'Dental Clinic Desk'}</span>
                 </div>
               </div>
             </button>
@@ -395,7 +394,7 @@ export const MessagesPage: React.FC<MessagesPageProps> = ({
             <div className="flex items-center gap-2">
               <button
                 id="call-patient-btn"
-                onClick={() => onShowToast ? onShowToast('info', `Initiating call to ${activeConv.patientName} (${activeConv.patientPhone})...`) : undefined}
+                onClick={() => onShowToast ? onShowToast('info', `Initiating call to ${activeConv.patient_name} (${activeConv.patient_phone})...`) : undefined}
                 className="p-2 text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-xl transition-colors border border-slate-200/80 cursor-pointer flex items-center gap-1.5 text-xs font-semibold"
                 title="Call Patient"
               >
@@ -440,7 +439,7 @@ export const MessagesPage: React.FC<MessagesPageProps> = ({
                   className={`flex flex-col ${isStaff ? 'items-end' : 'items-start'}`}
                 >
                   <div className="text-[10px] text-slate-400 mb-1 px-1 flex items-center gap-1.5">
-                    <span className="font-semibold text-slate-600">{msg.senderName}</span>
+                    <span className="font-semibold text-slate-600">{msg.sender_name}</span>
                     <span>•</span>
                     <span>{msg.timestamp}</span>
                     {isStaff && (
@@ -481,7 +480,6 @@ export const MessagesPage: React.FC<MessagesPageProps> = ({
                             alt="Attached image" 
                             className="w-full max-h-72 object-cover rounded-xl transition-transform duration-200 group-hover:scale-[1.02]"
                             onError={(e) => {
-                              console.warn('Image failed to load:', imageUrl);
                             }}
                           />
                           <div className="absolute inset-0 bg-slate-950/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-1 text-white text-[11px] font-semibold">
@@ -614,7 +612,7 @@ export const MessagesPage: React.FC<MessagesPageProps> = ({
                 <textarea
                   id="reply-textarea"
                   rows={2}
-                  placeholder={selectedFile ? `Add a caption for ${selectedFile.name}...` : `Reply to ${activeConv.patientName}...`}
+                  placeholder={selectedFile ? `Add a caption for ${selectedFile.name}...` : `Reply to ${activeConv.patient_name}...`}
                   value={replyText}
                   onChange={(e) => setReplyText(e.target.value)}
                   className="w-full bg-slate-50 border border-slate-200/80 rounded-xl p-3 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-slate-900/10 focus:border-slate-900 focus:bg-white resize-none transition-all placeholder:text-slate-400 font-medium"
@@ -767,8 +765,8 @@ export const MessagesPage: React.FC<MessagesPageProps> = ({
                     <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">Assigned Doctor</label>
                     <input
                       type="text"
-                      value={editForm.assignedDoctor}
-                      onChange={(e) => setEditForm({...editForm, assignedDoctor: e.target.value})}
+                      value={editForm.assigned_doctor}
+                      onChange={(e) => setEditForm({...editForm, assigned_doctor: e.target.value})}
                       className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2 font-medium focus:outline-none focus:border-slate-900"
                     />
                   </div>
@@ -777,8 +775,8 @@ export const MessagesPage: React.FC<MessagesPageProps> = ({
                     <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">Medical Alerts & Notes</label>
                     <textarea
                       rows={2}
-                      value={editForm.medicalAlerts}
-                      onChange={(e) => setEditForm({...editForm, medicalAlerts: e.target.value})}
+                      value={editForm.medical_alerts}
+                      onChange={(e) => setEditForm({...editForm, medical_alerts: e.target.value})}
                       className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2 font-medium focus:outline-none focus:border-slate-900 text-xs"
                     />
                   </div>
@@ -805,12 +803,12 @@ export const MessagesPage: React.FC<MessagesPageProps> = ({
                 {/* Main Avatar & Identity Card */}
                 <div className="text-center bg-white p-4 rounded-2xl border border-slate-200/80 shadow-2xs">
                   <img
-                    src={(activeConv.patientAvatar && activeConv.patientAvatar.trim() !== '') ? activeConv.patientAvatar : "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&auto=format&fit=crop&q=80"}
+                    src={(activeConv.patient_avatar && activeConv.patient_avatar.trim() !== '') ? activeConv.patient_avatar : "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&auto=format&fit=crop&q=80"}
                     alt={editForm.name}
                     className="w-16 h-16 rounded-full object-cover border-2 border-slate-200 mx-auto mb-2 shadow-xs"
                   />
                   <h4 className="text-sm font-bold text-slate-900">{editForm.name}</h4>
-                  <div className="text-xs text-slate-500 font-mono font-medium mt-0.5">{activeConv.patientId}</div>
+                  <div className="text-xs text-slate-500 font-mono font-medium mt-0.5">{activeConv.patient_id}</div>
                   <div className="inline-flex items-center gap-1.5 mt-2 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
                     <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
                     Active Registered Patient
@@ -889,7 +887,7 @@ export const MessagesPage: React.FC<MessagesPageProps> = ({
                         <UserCheck className="w-3.5 h-3.5 text-slate-400" /> Assigned Doctor
                       </span>
                       <span className="font-semibold text-slate-900">
-                        {editForm.assignedDoctor}
+                        {editForm.assigned_doctor}
                       </span>
                     </div>
 
@@ -898,7 +896,7 @@ export const MessagesPage: React.FC<MessagesPageProps> = ({
                         <Clock className="w-3.5 h-3.5 text-slate-400" /> Total Visits
                       </span>
                       <span className="font-semibold text-slate-900">
-                        {activePatient?.totalVisits || 4} Visits
+                        {activePatient?.total_visits || 4} Visits
                       </span>
                     </div>
                   </div>
@@ -992,7 +990,7 @@ export const MessagesPage: React.FC<MessagesPageProps> = ({
                     <span>Medical Alerts & Chart Notes</span>
                   </div>
                   <div className="text-[11px] text-amber-800 font-medium leading-relaxed">
-                    {editForm.medicalAlerts}
+                    {editForm.medical_alerts}
                   </div>
                 </div>
               </>

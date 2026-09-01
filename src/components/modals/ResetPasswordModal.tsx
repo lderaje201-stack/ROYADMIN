@@ -5,7 +5,7 @@ import { KeyRound, X, Check, Copy, Send, ShieldAlert } from 'lucide-react';
 interface ResetPasswordModalProps {
   patient: Patient | null;
   onClose: () => void;
-  onConfirmReset: (patientId: string, method: 'email' | 'temp-password') => void;
+  onConfirmReset: (patient_id: string, method: 'email' | 'temp-password') => void;
 }
 
 export const ResetPasswordModal: React.FC<ResetPasswordModalProps> = ({
@@ -53,10 +53,10 @@ export const ResetPasswordModal: React.FC<ResetPasswordModalProps> = ({
         <div className="p-6 space-y-5">
           <div className="p-3.5 bg-neutral-50/60 border border-neutral-200/60 rounded-xl flex items-center gap-3">
             <div className="w-10 h-10 rounded-full bg-slate-200 text-slate-800 font-bold flex items-center justify-center text-sm">
-              {patient.name.charAt(0)}
+              {patient.full_name.charAt(0)}
             </div>
             <div>
-              <div className="text-sm font-bold text-slate-900">{patient.name}</div>
+              <div className="text-sm font-bold text-slate-900">{patient.full_name}</div>
               <div className="text-xs text-slate-500">{patient.email} • {patient.phone}</div>
             </div>
           </div>

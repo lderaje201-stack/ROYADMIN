@@ -21,11 +21,11 @@ export const TeamMemberModal: React.FC<TeamMemberModalProps> = ({
   const [role, setRole] = useState('');
   const [specialty, setSpecialty] = useState('');
   const [bio, setBio] = useState('');
-  const [photoUrl, setPhotoUrl] = useState('');
+  const [photo_url, setPhotoUrl] = useState('');
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('+965 ');
-  const [roomNumber, setRoomNumber] = useState('Suite 101');
-  const [published, setPublished] = useState(true);
+  const [room_number, setRoomNumber] = useState('Suite 101');
+  const [is_published, setPublished] = useState(true);
 
   useEffect(() => {
     if (editingMember) {
@@ -33,11 +33,11 @@ export const TeamMemberModal: React.FC<TeamMemberModalProps> = ({
       setRole(editingMember.role);
       setSpecialty(editingMember.specialty);
       setBio(editingMember.bio);
-      setPhotoUrl(editingMember.photoUrl);
+      setPhotoUrl(editingMember.photo_url);
       setEmail(editingMember.email);
       setPhone(editingMember.phone);
-      setRoomNumber(editingMember.roomNumber);
-      setPublished(editingMember.published);
+      setRoomNumber(editingMember.room_number);
+      setPublished(editingMember.is_published);
     } else {
       setName('');
       setRole('Specialist Dentist');
@@ -59,12 +59,12 @@ export const TeamMemberModal: React.FC<TeamMemberModalProps> = ({
       role,
       specialty,
       bio,
-      photoUrl: photoUrl || 'https://images.unsplash.com/photo-1622253692010-333f2da6031d?w=300&auto=format&fit=crop&q=80',
+      photo_url: photo_url || 'https://images.unsplash.com/photo-1622253692010-333f2da6031d?w=300&auto=format&fit=crop&q=80',
       email,
       phone,
-      roomNumber,
-      published,
-      workingDays: editingMember ? editingMember.workingDays : ['Sun', 'Mon', 'Tue', 'Wed', 'Thu']
+      room_number,
+      is_published,
+      working_days: editingMember ? editingMember.working_days : ['Sun', 'Mon', 'Tue', 'Wed', 'Thu']
     });
     onClose();
   };
@@ -177,7 +177,7 @@ export const TeamMemberModal: React.FC<TeamMemberModalProps> = ({
                 id="team-room-input"
                 type="text"
                 required
-                value={roomNumber}
+                value={room_number}
                 onChange={e => setRoomNumber(e.target.value)}
                 className="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-xs text-slate-800 focus:ring-2 focus:ring-blue-600 focus:outline-none"
               />
@@ -187,7 +187,7 @@ export const TeamMemberModal: React.FC<TeamMemberModalProps> = ({
               <input
                 id="team-photo-input"
                 type="text"
-                value={photoUrl}
+                value={photo_url}
                 onChange={e => setPhotoUrl(e.target.value)}
                 placeholder="https://images.unsplash.com/..."
                 className="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-xs text-slate-800 focus:ring-2 focus:ring-blue-600 focus:outline-none"
@@ -204,9 +204,9 @@ export const TeamMemberModal: React.FC<TeamMemberModalProps> = ({
             </div>
             <label className="relative inline-flex items-center cursor-pointer">
               <input
-                id="team-published-toggle"
+                id="team-is_published-toggle"
                 type="checkbox"
-                checked={published}
+                checked={is_published}
                 onChange={e => setPublished(e.target.checked)}
                 className="sr-only peer"
               />

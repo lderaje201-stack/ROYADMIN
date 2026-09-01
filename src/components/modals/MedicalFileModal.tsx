@@ -5,7 +5,7 @@ import { X, FileUp, UploadCloud, FileText } from 'lucide-react';
 interface MedicalFileModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSave: (file: Omit<MedicalFile, 'id' | 'uploadDate'>) => void;
+  onSave: (file: Omit<MedicalFile, 'id' | 'created_at'>) => void;
   patients: Patient[];
 }
 
@@ -17,26 +17,26 @@ export const MedicalFileModal: React.FC<MedicalFileModalProps> = ({
 }) => {
   if (!isOpen) return null;
 
-  const [patientId, setPatientId] = useState(patients[0]?.id || 'PT-8801');
-  const [fileTitle, setFileTitle] = useState('');
+  const [patient_id, setPatientId] = useState(patients[0]?.id || 'PT-8801');
+  const [title, setFileTitle] = useState('');
   const [category, setCategory] = useState<FileCategory>('X-Ray');
-  const [uploadedBy, setUploadedBy] = useState('Dr. Faisal Al-Sabah');
-  const [fileSize, setFileSize] = useState('12.5 MB');
-  const [fileType, setFileType] = useState('DICOM / High-Res PNG');
+  const [uploaded_by, setUploadedBy] = useState('Dr. Faisal Al-Sabah');
+  const [file_size, setFileSize] = useState('12.5 MB');
+  const [file_type, setFileType] = useState('DICOM / High-Res PNG');
   const [reviewed, setReviewed] = useState(false);
   const [notes, setNotes] = useState('');
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    const patientObj = patients.find(p => p.id === patientId);
+    const patientObj = patients.find(p => p.id === patient_id);
     onSave({
-      patientId,
-      patientName: patientObj ? patientObj.name : 'Unknown Patient',
-      fileTitle: fileTitle || `${category} - ${patientObj?.name || 'Scan'}`,
+      patient_id,
+      patient_name: patientObj ? patientObj.name : 'Unknown Patient',
+      title: title || `${category} - ${patientObj?.name || 'Scan'}`,
       category,
-      uploadedBy,
-      fileSize,
-      fileType,
+      uploaded_by,
+      file_size,
+      file_type,
       reviewed,
       notes
     });
@@ -68,13 +68,13 @@ export const MedicalFileModal: React.FC<MedicalFileModalProps> = ({
             <label className="block text-xs font-semibold text-slate-700 mb-1">Select Patient</label>
             <select
               id="file-patient-select"
-              value={patientId}
+              value={patient_id}
               onChange={e => setPatientId(e.target.value)}
               className="w-full bg-slate-50 border border-slate-300 rounded-lg px-3 py-2 text-xs font-medium text-slate-800 focus:ring-2 focus:ring-blue-600 focus:outline-none"
             >
               {patients.map(p => (
                 <option key={p.id} value={p.id}>
-                  {p.name} ({p.id})
+                  {p.full_name} ({p.id})
                 </option>
               ))}
             </select>
@@ -87,7 +87,7 @@ export const MedicalFileModal: React.FC<MedicalFileModalProps> = ({
               type="text"
               required
               placeholder="e.g. Panoramic Digital OPG 2026"
-              value={fileTitle}
+              value={title}
               onChange={e => setFileTitle(e.target.value)}
               className="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-xs text-slate-800 focus:ring-2 focus:ring-blue-600 focus:outline-none"
             />
@@ -115,7 +115,7 @@ export const MedicalFileModal: React.FC<MedicalFileModalProps> = ({
                 id="file-uploadedby-input"
                 type="text"
                 required
-                value={uploadedBy}
+                value={uploaded_by}
                 onChange={e => setUploadedBy(e.target.value)}
                 className="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-xs text-slate-800 focus:ring-2 focus:ring-blue-600 focus:outline-none"
               />

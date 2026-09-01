@@ -5,7 +5,7 @@ import { X, UserPlus, Phone, Mail, AlertTriangle, ShieldCheck } from 'lucide-rea
 interface PatientModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSave: (patient: Omit<Patient, 'id' | 'registeredDate' | 'totalVisits' | 'lastVisit' | 'balance'>) => void;
+  onSave: (patient: Omit<Patient, 'id' | 'created_at' | 'total_visits' | 'last_visit' | 'balance'>) => void;
   teamMembers: TeamMember[];
 }
 
@@ -22,14 +22,14 @@ export const PatientModal: React.FC<PatientModalProps> = ({
   const [email, setEmail] = useState('');
   const [gender, setGender] = useState<'Male' | 'Female' | 'Other'>('Female');
   const [age, setAge] = useState<number>(30);
-  const [assignedDoctor, setAssignedDoctor] = useState(teamMembers[0]?.name || 'Dr. Faisal Al-Sabah');
-  const [medicalAlerts, setMedicalAlerts] = useState<string>('');
+  const [assigned_doctor, setAssignedDoctor] = useState(teamMembers[0]?.name || 'Dr. Faisal Al-Sabah');
+  const [medical_alerts, setMedicalAlerts] = useState<string>('');
   const [status, setStatus] = useState<'Active' | 'Inactive'>('Active');
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    const alertsArray = medicalAlerts
-      ? medicalAlerts.split(',').map(s => s.trim()).filter(Boolean)
+    const alertsArray = medical_alerts
+      ? medical_alerts.split(',').map(s => s.trim()).filter(Boolean)
       : [];
 
     onSave({
@@ -38,9 +38,9 @@ export const PatientModal: React.FC<PatientModalProps> = ({
       email: email || `${name.toLowerCase().replace(/\s+/g, '.')}@example.com`,
       gender,
       age: Number(age),
-      assignedDoctor,
+      assigned_doctor,
       status,
-      medicalAlerts: alertsArray
+      medical_alerts: alertsArray
     });
     onClose();
   };
@@ -150,7 +150,7 @@ export const PatientModal: React.FC<PatientModalProps> = ({
             <label className="block text-xs font-semibold text-slate-700 mb-1">Primary Dentist</label>
             <select
               id="patient-doctor-select"
-              value={assignedDoctor}
+              value={assigned_doctor}
               onChange={e => setAssignedDoctor(e.target.value)}
               className="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-xs text-slate-800 focus:ring-2 focus:ring-blue-600 focus:outline-none"
             >
@@ -170,7 +170,7 @@ export const PatientModal: React.FC<PatientModalProps> = ({
               id="patient-alerts-input"
               type="text"
               placeholder="e.g. Penicillin Allergy, High Blood Pressure"
-              value={medicalAlerts}
+              value={medical_alerts}
               onChange={e => setMedicalAlerts(e.target.value)}
               className="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-xs text-slate-800 focus:ring-2 focus:ring-blue-600 focus:outline-none"
             />

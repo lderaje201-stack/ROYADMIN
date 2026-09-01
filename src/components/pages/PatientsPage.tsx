@@ -35,11 +35,11 @@ export const PatientsPage: React.FC<PatientsPageProps> = ({
   const filteredPatients = patients.filter((p) => {
     const q = searchQuery.toLowerCase();
     return !q ||
-      p.name.toLowerCase().includes(q) ||
+      p.full_name.toLowerCase().includes(q) ||
       p.phone.includes(q) ||
       p.email.toLowerCase().includes(q) ||
       p.id.toLowerCase().includes(q) ||
-      p.assignedDoctor.toLowerCase().includes(q);
+      p.assigned_doctor.toLowerCase().includes(q);
   });
 
   return (
@@ -96,10 +96,10 @@ export const PatientsPage: React.FC<PatientsPageProps> = ({
                     <td className="py-4 px-5">
                       <div className="flex items-center gap-3">
                         <div className="w-8 h-8 rounded-full bg-neutral-100 text-slate-800 font-bold flex items-center justify-center text-xs shrink-0 border border-neutral-200/60">
-                          {p.name.charAt(0)}
+                          {p.full_name.charAt(0)}
                         </div>
                         <div>
-                          <div className="font-bold text-slate-900">{p.name}</div>
+                          <div className="font-bold text-slate-900">{p.full_name}</div>
                           <div className="text-[11px] text-slate-500 font-mono">{p.id} • {p.age}y ({p.gender})</div>
                         </div>
                       </div>
@@ -117,14 +117,14 @@ export const PatientsPage: React.FC<PatientsPageProps> = ({
 
                     {/* Registered Date */}
                     <td className="py-4 px-5 text-slate-700">
-                      <div className="font-medium text-slate-900">{p.registeredDate}</div>
-                      <div className="text-[10px] text-slate-400">Last visit: {p.lastVisit}</div>
+                      <div className="font-medium text-slate-900">{p.created_at}</div>
+                      <div className="text-[10px] text-slate-400">Last visit: {p.last_visit}</div>
                     </td>
 
                     {/* Doctor */}
                     <td className="py-4 px-5">
                       <span className="bg-slate-100 text-slate-700 text-[11px] px-2.5 py-1 rounded-lg font-medium border border-slate-200/60">
-                        {p.assignedDoctor}
+                        {p.assigned_doctor}
                       </span>
                     </td>
 
@@ -193,29 +193,29 @@ export const PatientsPage: React.FC<PatientsPageProps> = ({
                 </div>
                 <div className="flex justify-between py-1.5 border-b border-slate-100">
                   <span className="text-slate-500 font-semibold">Registered:</span>
-                  <span className="text-slate-900">{selectedPatientForView.registeredDate}</span>
+                  <span className="text-slate-900">{selectedPatientForView.created_at}</span>
                 </div>
                 <div className="flex justify-between py-1.5 border-b border-slate-100">
                   <span className="text-slate-500 font-semibold">Last Visit:</span>
-                  <span className="text-slate-900">{selectedPatientForView.lastVisit}</span>
+                  <span className="text-slate-900">{selectedPatientForView.last_visit}</span>
                 </div>
                 <div className="flex justify-between py-1.5 border-b border-slate-100">
                   <span className="text-slate-500 font-semibold">Total Visits:</span>
-                  <span className="text-slate-900 font-bold">{selectedPatientForView.totalVisits} visits</span>
+                  <span className="text-slate-900 font-bold">{selectedPatientForView.total_visits} visits</span>
                 </div>
                 <div className="flex justify-between py-1.5 border-b border-slate-100">
                   <span className="text-slate-500 font-semibold">Primary Dentist:</span>
-                  <span className="text-blue-700 font-bold">{selectedPatientForView.assignedDoctor}</span>
+                  <span className="text-blue-700 font-bold">{selectedPatientForView.assigned_doctor}</span>
                 </div>
               </div>
 
-              {selectedPatientForView.medicalAlerts && selectedPatientForView.medicalAlerts.length > 0 && (
+              {selectedPatientForView.medical_alerts && selectedPatientForView.medical_alerts.length > 0 && (
                 <div className="p-3 bg-rose-50 border border-rose-200 rounded-lg">
                   <span className="text-[10px] font-bold text-rose-800 uppercase tracking-wider block mb-1">
                     Medical Alerts / Allergies:
                   </span>
                   <div className="flex flex-wrap gap-1">
-                    {selectedPatientForView.medicalAlerts.map((alert, i) => (
+                    {selectedPatientForView.medical_alerts.map((alert, i) => (
                       <span key={i} className="bg-rose-100 text-rose-800 font-bold px-2 py-0.5 rounded text-[11px]">
                         ⚠️ {alert}
                       </span>

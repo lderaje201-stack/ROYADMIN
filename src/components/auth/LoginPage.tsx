@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { ShieldCheck, Mail, Lock, Eye, EyeOff, AlertCircle, ArrowRight, Stethoscope } from 'lucide-react';
-import { signInAdmin } from '../../lib/supabase';
+import { signInAdmin } from '../../services/AuthService';
 import { AdminProfile } from '../../types';
 
 interface LoginPageProps {

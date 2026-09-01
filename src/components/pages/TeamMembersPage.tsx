@@ -39,7 +39,7 @@ export const TeamMembersPage: React.FC<TeamMembersPageProps> = ({
       tm.name.toLowerCase().includes(q) ||
       tm.role.toLowerCase().includes(q) ||
       tm.specialty.toLowerCase().includes(q) ||
-      tm.roomNumber.toLowerCase().includes(q);
+      tm.room_number.toLowerCase().includes(q);
   });
 
   return (
@@ -49,7 +49,7 @@ export const TeamMembersPage: React.FC<TeamMembersPageProps> = ({
         <div>
           <h2 className="text-base font-bold text-slate-900">Clinical Team & Specialist Roster</h2>
           <p className="text-xs text-slate-500 mt-0.5">
-            Manage doctor bios, published website profiles, and assigned dental suites
+            Manage doctor bios, is_published website profiles, and assigned dental suites
           </p>
         </div>
 
@@ -109,8 +109,8 @@ export const TeamMembersPage: React.FC<TeamMembersPageProps> = ({
                 {/* Top Profile Header */}
                 <div className="flex items-start gap-3">
                   <img
-                    src={(member.photoUrl && member.photoUrl.trim() !== '') ? member.photoUrl : "https://images.unsplash.com/photo-1559839734-2b71ea197ec2?w=100&auto=format&fit=crop&q=80"}
-                    alt={member.name}
+                    src={(member.photo_url && member.photo_url.trim() !== '') ? member.photo_url : "https://images.unsplash.com/photo-1559839734-2b71ea197ec2?w=100&auto=format&fit=crop&q=80"}
+                    alt={member.full_name}
                     className="w-16 h-16 rounded-xl object-cover border border-slate-200 shrink-0 shadow-xs"
                   />
                   <div className="min-w-0 flex-1">
@@ -118,16 +118,16 @@ export const TeamMembersPage: React.FC<TeamMembersPageProps> = ({
                       <span className="text-xs font-bold text-blue-600 font-mono">{member.id}</span>
                       {/* Published status badge */}
                       <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1 border ${
-                        member.published
+                        member.is_published
                           ? 'bg-emerald-50 text-emerald-800 border-emerald-300'
                           : 'bg-slate-100 text-slate-600 border-slate-300'
                       }`}>
-                        {member.published ? <Globe className="w-3 h-3 text-emerald-600" /> : <EyeOff className="w-3 h-3 text-slate-400" />}
-                        {member.published ? 'Published' : 'Hidden'}
+                        {member.is_published ? <Globe className="w-3 h-3 text-emerald-600" /> : <EyeOff className="w-3 h-3 text-slate-400" />}
+                        {member.is_published ? 'Published' : 'Hidden'}
                       </span>
                     </div>
 
-                    <h3 className="text-sm font-bold text-slate-900 mt-1 truncate">{member.name}</h3>
+                    <h3 className="text-sm font-bold text-slate-900 mt-1 truncate">{member.full_name}</h3>
                     <p className="text-xs font-semibold text-slate-700 leading-tight truncate">{member.role}</p>
                     <p className="text-[11px] text-slate-500 font-medium truncate mt-0.5">{member.specialty}</p>
                   </div>
@@ -142,7 +142,7 @@ export const TeamMembersPage: React.FC<TeamMembersPageProps> = ({
                 <div className="grid grid-cols-2 gap-2 text-[11px] text-slate-600 pt-1">
                   <div className="flex items-center gap-1.5 truncate">
                     <Building className="w-3.5 h-3.5 text-blue-600 shrink-0" />
-                    <span>{member.roomNumber}</span>
+                    <span>{member.room_number}</span>
                   </div>
                   <div className="flex items-center gap-1.5 truncate">
                     <Mail className="w-3.5 h-3.5 text-slate-400 shrink-0" />
@@ -157,16 +157,16 @@ export const TeamMembersPage: React.FC<TeamMembersPageProps> = ({
                 <div className="flex items-center gap-2">
                   <label className="relative inline-flex items-center cursor-pointer">
                     <input
-                      id={`toggle-published-${member.id}`}
+                      id={`toggle-is_published-${member.id}`}
                       type="checkbox"
-                      checked={member.published}
+                      checked={member.is_published}
                       onChange={() => onTogglePublished(member.id)}
                       className="sr-only peer"
                     />
                     <div className="w-8 h-4 bg-slate-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:bg-blue-600"></div>
                   </label>
                   <span className="text-[11px] font-semibold text-slate-600">
-                    {member.published ? 'Site Live' : 'Draft'}
+                    {member.is_published ? 'Site Live' : 'Draft'}
                   </span>
                 </div>
 
@@ -215,7 +215,7 @@ export const TeamMembersPage: React.FC<TeamMembersPageProps> = ({
                       <td className="py-3.5 px-4">
                         <div className="flex items-center gap-3">
                           <img
-                          src={(m.photoUrl && m.photoUrl.trim() !== '') ? m.photoUrl : "https://images.unsplash.com/photo-1559839734-2b71ea197ec2?w=100&auto=format&fit=crop&q=80"}
+                          src={(m.photo_url && m.photo_url.trim() !== '') ? m.photo_url : "https://images.unsplash.com/photo-1559839734-2b71ea197ec2?w=100&auto=format&fit=crop&q=80"}
                           alt={m.name}
                           className="w-10 h-10 rounded-lg object-cover border border-slate-200 shrink-0"
                         />
@@ -232,16 +232,16 @@ export const TeamMembersPage: React.FC<TeamMembersPageProps> = ({
                     </td>
 
                     <td className="py-3.5 px-4">
-                      <div className="font-semibold text-slate-800">{m.roomNumber}</div>
+                      <div className="font-semibold text-slate-800">{m.room_number}</div>
                       <div className="text-[11px] text-slate-500">{m.email}</div>
                     </td>
 
                     <td className="py-3.5 px-4 text-center">
                       <label className="relative inline-flex items-center cursor-pointer">
                         <input
-                          id={`table-toggle-published-${m.id}`}
+                          id={`table-toggle-is_published-${m.id}`}
                           type="checkbox"
-                          checked={m.published}
+                          checked={m.is_published}
                           onChange={() => onTogglePublished(m.id)}
                           className="sr-only peer"
                         />

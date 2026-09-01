@@ -56,7 +56,7 @@ export const BookingsPage: React.FC<BookingsPageProps> = ({
   const statusFilters = ['All', 'Pending', 'Confirmed', 'Cancelled', 'Completed'];
 
   // List of unique doctors for filtering
-  const doctorOptions = ['All', ...Array.from(new Set(bookings.map(b => b.doctorName)))];
+  const doctorOptions = ['All', ...Array.from(new Set(bookings.map(b => b.doctor_name)))];
 
   // Date Formatting Helpers
   const formatDateKey = (date: Date): string => {
@@ -77,13 +77,13 @@ export const BookingsPage: React.FC<BookingsPageProps> = ({
   // Filter Bookings
   const filteredBookings = bookings.filter((b) => {
     const matchesStatus = selectedStatusFilter === 'All' || b.status === selectedStatusFilter;
-    const matchesDoctor = selectedDoctorFilter === 'All' || b.doctorName === selectedDoctorFilter;
+    const matchesDoctor = selectedDoctorFilter === 'All' || b.doctor_name === selectedDoctorFilter;
     const q = searchQuery.toLowerCase();
     const matchesQuery = !q || 
-      b.patientName.toLowerCase().includes(q) ||
+      b.patient_name.toLowerCase().includes(q) ||
       b.service.toLowerCase().includes(q) ||
-      b.doctorName.toLowerCase().includes(q) ||
-      b.patientPhone.includes(q) ||
+      b.doctor_name.toLowerCase().includes(q) ||
+      b.patient_phone.includes(q) ||
       b.id.toLowerCase().includes(q);
     return matchesStatus && matchesDoctor && matchesQuery;
   });
@@ -527,7 +527,7 @@ export const BookingsPage: React.FC<BookingsPageProps> = ({
                         <div className="flex items-start justify-between gap-1">
                           <div className="font-bold text-[11px] truncate flex items-center gap-1">
                             <GripVertical className="w-3 h-3 text-slate-400 shrink-0 opacity-60" />
-                            <span className="truncate">{b.patientName}</span>
+                            <span className="truncate">{b.patient_name}</span>
                           </div>
                           <span className="text-[10px] font-semibold shrink-0 bg-white/70 px-1 rounded">
                             {b.time}
@@ -620,7 +620,7 @@ export const BookingsPage: React.FC<BookingsPageProps> = ({
                           >
                             <div className="font-bold text-[11px] truncate flex items-center gap-1">
                               <GripVertical className="w-3 h-3 text-slate-400 shrink-0 opacity-60" />
-                              <span className="truncate">{b.patientName}</span>
+                              <span className="truncate">{b.patient_name}</span>
                             </div>
                             <div className="text-[10px] opacity-80 truncate pl-4">
                               {b.service}
@@ -676,20 +676,20 @@ export const BookingsPage: React.FC<BookingsPageProps> = ({
                       {/* Patient Name */}
                       <td className="py-3.5 px-4">
                         <div className="flex items-center gap-3">
-                          {(b.patientAvatar && b.patientAvatar.trim() !== '') ? (
+                          {(b.patient_avatar && b.patient_avatar.trim() !== '') ? (
                             <img
-                              src={b.patientAvatar}
-                              alt={b.patientName}
+                              src={b.patient_avatar}
+                              alt={b.patient_name}
                               className="w-8 h-8 rounded-full object-cover border border-slate-200"
                             />
                           ) : (
                             <div className="w-8 h-8 rounded-full bg-slate-200 font-bold flex items-center justify-center text-slate-700 text-xs">
-                              {b.patientName.charAt(0)}
+                              {b.patient_name.charAt(0)}
                             </div>
                           )}
                           <div>
-                            <div className="font-bold text-slate-900">{b.patientName}</div>
-                            <div className="text-[11px] text-slate-500">{b.patientPhone} • <span className="font-mono text-[10px] text-blue-600 font-semibold">{b.id}</span></div>
+                            <div className="font-bold text-slate-900">{b.patient_name}</div>
+                            <div className="text-[11px] text-slate-500">{b.patient_phone} • <span className="font-mono text-[10px] text-blue-600 font-semibold">{b.id}</span></div>
                           </div>
                         </div>
                       </td>
@@ -699,13 +699,13 @@ export const BookingsPage: React.FC<BookingsPageProps> = ({
                         <div className="font-semibold text-slate-900">{b.service}</div>
                         <div className="text-[11px] text-slate-500 flex items-center gap-1 mt-0.5">
                           <MapPin className="w-3 h-3 text-slate-400" />
-                          <span>{b.roomNumber}</span>
+                          <span>{b.room_number}</span>
                         </div>
                       </td>
 
                       {/* Doctor */}
                       <td className="py-3.5 px-4">
-                        <div className="font-semibold text-slate-800">{b.doctorName}</div>
+                        <div className="font-semibold text-slate-800">{b.doctor_name}</div>
                       </td>
 
                       {/* Date & Time */}
@@ -791,8 +791,8 @@ export const BookingsPage: React.FC<BookingsPageProps> = ({
             <div className="p-6 space-y-4 text-xs">
               <div className="p-3 bg-slate-50 border border-slate-200 rounded-lg flex items-center justify-between">
                 <div>
-                  <div className="text-sm font-bold text-slate-900">{selectedBookingForDetails.patientName}</div>
-                  <div className="text-slate-500">{selectedBookingForDetails.patientPhone}</div>
+                  <div className="text-sm font-bold text-slate-900">{selectedBookingForDetails.patient_name}</div>
+                  <div className="text-slate-500">{selectedBookingForDetails.patient_phone}</div>
                 </div>
                 {getStatusBadge(selectedBookingForDetails.status)}
               </div>
@@ -806,11 +806,11 @@ export const BookingsPage: React.FC<BookingsPageProps> = ({
                 <div className="grid grid-cols-2 gap-2 pt-2 border-t border-slate-100">
                   <div>
                     <span className="font-bold text-slate-500 uppercase text-[10px]">Attending Doctor:</span>
-                    <div className="font-semibold text-slate-800">{selectedBookingForDetails.doctorName}</div>
+                    <div className="font-semibold text-slate-800">{selectedBookingForDetails.doctor_name}</div>
                   </div>
                   <div>
                     <span className="font-bold text-slate-500 uppercase text-[10px]">Clinic Room:</span>
-                    <div className="font-semibold text-slate-800">{selectedBookingForDetails.roomNumber}</div>
+                    <div className="font-semibold text-slate-800">{selectedBookingForDetails.room_number}</div>
                   </div>
                 </div>
 

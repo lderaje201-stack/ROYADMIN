@@ -51,7 +51,7 @@ export const MedicalFilePrintModal: React.FC<MedicalFilePrintModalProps> = ({
 
   const handleSimulatePDFDownload = () => {
     if (onShowToast) {
-      onShowToast('success', `Exported printable PDF record: ${file ? file.fileTitle : 'Medical_Files_Summary'}.pdf`);
+      onShowToast('success', `Exported printable PDF record: ${file ? file.title : 'Medical_Files_Summary'}.pdf`);
     }
   };
 
@@ -73,7 +73,7 @@ export const MedicalFilePrintModal: React.FC<MedicalFilePrintModalProps> = ({
                 </span>
               </h3>
               <p className="text-xs text-slate-400">
-                {isBatch ? `Batch Summary (${files.length} Medical Records)` : `File: ${file?.fileTitle || 'Medical File'}`}
+                {isBatch ? `Batch Summary (${files.length} Medical Records)` : `File: ${file?.title || 'Medical File'}`}
               </p>
             </div>
           </div>
@@ -222,18 +222,18 @@ export const MedicalFilePrintModal: React.FC<MedicalFilePrintModalProps> = ({
                 <div className="bg-slate-50 border border-slate-300 p-4 rounded-md mb-6 grid grid-cols-2 sm:grid-cols-4 gap-4 text-xs">
                   <div>
                     <span className="text-[10px] uppercase font-bold text-slate-500 block">Patient Name</span>
-                    <span className="font-bold text-slate-900 text-sm">{file ? file.patientName : (patient?.name || 'Multiple Patients')}</span>
+                    <span className="font-bold text-slate-900 text-sm">{file ? file.patient_name : (patient?.name || 'Multiple Patients')}</span>
                   </div>
                   <div>
                     <span className="text-[10px] uppercase font-bold text-slate-500 block">Patient Chart ID</span>
-                    <span className="font-mono font-bold text-slate-900">{file ? file.patientId : (patient?.id || 'ALL-RECORDS')}</span>
+                    <span className="font-mono font-bold text-slate-900">{file ? file.patient_id : (patient?.id || 'ALL-RECORDS')}</span>
                   </div>
                   <div>
                     <span className="text-[10px] uppercase font-bold text-slate-500 block">Primary Attending</span>
-                    <span className="font-semibold text-slate-800">{file ? file.uploadedBy : (patient?.assignedDoctor || 'Administrator')}</span>
+                    <span className="font-semibold text-slate-800">{file ? file.uploaded_by : (patient?.assigned_doctor || 'Administrator')}</span>
                   </div>
                   <div>
-                    <span className="text-[10px] uppercase font-bold text-slate-500 block">Review Status</span>
+                    <span className="text-[10px] uppercase font-bold text-slate-500 block">Testimonial Status</span>
                     <span className={`font-bold inline-flex items-center gap-1 ${file?.reviewed ? 'text-emerald-700' : 'text-slate-700'}`}>
                       <CheckCircle2 className="w-3.5 h-3.5" />
                       {file ? (file.reviewed ? 'OFFICIALLY REVIEWED' : 'PENDING REVIEW') : 'VERIFIED LOG'}
@@ -249,22 +249,22 @@ export const MedicalFilePrintModal: React.FC<MedicalFilePrintModalProps> = ({
                   <div className="border border-slate-200 rounded-md p-4 bg-white">
                     <div className="flex justify-between items-start gap-2 border-b border-slate-100 pb-3 mb-3">
                       <div>
-                        <h2 className="text-base font-extrabold text-slate-900">{file.fileTitle}</h2>
+                        <h2 className="text-base font-extrabold text-slate-900">{file.title}</h2>
                         <span className="text-xs text-slate-500">Category: <strong className="text-slate-800">{file.category}</strong></span>
                       </div>
                       <span className="bg-slate-100 border border-slate-300 text-slate-800 text-xs font-mono font-bold px-2.5 py-1 rounded">
-                        {file.fileType} • {file.fileSize}
+                        {file.file_type} • {file.file_size}
                       </span>
                     </div>
 
                     <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 text-xs text-slate-700">
                       <div>
                         <span className="text-slate-500 text-[10px] uppercase font-bold block">Upload Date:</span>
-                        <span className="font-semibold">{file.uploadDate}</span>
+                        <span className="font-semibold">{file.created_at}</span>
                       </div>
                       <div>
                         <span className="text-slate-500 text-[10px] uppercase font-bold block">Uploaded By Staff:</span>
-                        <span className="font-semibold">{file.uploadedBy}</span>
+                        <span className="font-semibold">{file.uploaded_by}</span>
                       </div>
                       <div>
                         <span className="text-slate-500 text-[10px] uppercase font-bold block">DICOM Integrity:</span>
@@ -283,16 +283,16 @@ export const MedicalFilePrintModal: React.FC<MedicalFilePrintModalProps> = ({
 
                       <div className="h-56 bg-slate-900 rounded border border-slate-800 flex flex-col items-center justify-center p-6 text-center relative overflow-hidden">
                         <FileCheck className="w-14 h-14 text-blue-400 mb-2 opacity-90" />
-                        <span className="text-sm font-bold text-slate-100 tracking-wide font-mono">{file.fileTitle}</span>
+                        <span className="text-sm font-bold text-slate-100 tracking-wide font-mono">{file.title}</span>
                         <span className="text-xs text-slate-400 mt-1">
-                          Diagnostic Specimen Image • Format: {file.fileType} ({file.fileSize})
+                          Diagnostic Specimen Image • Format: {file.file_type} ({file.file_size})
                         </span>
                         
                         {/* Tooth Map Schematic Indicator */}
                         <div className="mt-4 pt-3 border-t border-slate-800 w-full flex justify-between items-center text-[10px] text-slate-400 font-mono">
                           <span>QUADRANT: Q1 - Q4</span>
                           <span className="text-blue-400 font-bold">DIGITAL DENTAL RADIOGRAPH</span>
-                          <span>PATIENT ID: {file.patientId}</span>
+                          <span>PATIENT ID: {file.patient_id}</span>
                         </div>
                       </div>
                     </div>
@@ -335,13 +335,13 @@ export const MedicalFilePrintModal: React.FC<MedicalFilePrintModalProps> = ({
                       {files.map((f) => (
                         <tr key={f.id} className="print-break-inside-avoid">
                           <td className="py-2 px-3">
-                            <div className="font-bold">{f.patientName}</div>
-                            <div className="text-[10px] font-mono text-slate-500">{f.patientId}</div>
+                            <div className="font-bold">{f.patient_name}</div>
+                            <div className="text-[10px] font-mono text-slate-500">{f.patient_id}</div>
                           </td>
-                          <td className="py-2 px-3 font-semibold">{f.fileTitle}</td>
+                          <td className="py-2 px-3 font-semibold">{f.title}</td>
                           <td className="py-2 px-3">{f.category}</td>
-                          <td className="py-2 px-3 font-mono">{f.uploadDate}</td>
-                          <td className="py-2 px-3">{f.uploadedBy}</td>
+                          <td className="py-2 px-3 font-mono">{f.created_at}</td>
+                          <td className="py-2 px-3">{f.uploaded_by}</td>
                           <td className="py-2 px-3 text-center font-bold text-[10px]">
                             {f.reviewed ? 'REVIEWED' : 'PENDING'}
                           </td>

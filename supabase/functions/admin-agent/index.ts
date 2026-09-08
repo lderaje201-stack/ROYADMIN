@@ -34,7 +34,23 @@ Deno.serve(async (req) => {
       return new Response(JSON.stringify({ error: 'Access denied: staff only' }), { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
     }
 
-    const ai = new GoogleGenAI({ apiKey: Deno.env.get('GEMINI_API_KEY') });
+    const rawKey = Deno.env.get('GEMINI_API_KEY');
+    const geminiApiKey = rawKey ? rawKey.replace(/[^\x20-\x7E]/g, '').trim() : '';
+    if (!geminiApiKey) {
+      return new Response(
+        JSON.stringify({ error: 'GEMINI_API_KEY is not configured in Supabase Edge Function secrets. Please set the GEMINI_API_KEY secret.' }), 
+        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    const ai = new GoogleGenAI({ 
+      apiKey: geminiApiKey,
+      httpOptions: {
+        headers: {
+          'User-Agent': 'aistudio-build'
+        }
+      }
+    });
 
     let context = 'You are the Royal Dental Agent. Propose actions based on staff requests. Return structured data defining the action to be taken.';
     
@@ -57,7 +73,7 @@ Deno.serve(async (req) => {
     };
 
     const response = await ai.models.generateContent({
-        model: 'gemini-2.5-flash',
+        model: 'gemini-3.7-flash',
         contents: prompt,
         config: { 
             systemInstruction: context,

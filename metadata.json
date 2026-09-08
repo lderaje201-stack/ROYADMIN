@@ -1,0 +1,6 @@
+{
+  "name": "Royal Dental Admin Center",
+  "description": "Comprehensive administrative clinical management platform for Royal Dental, featuring booking management, patient communications, medical file diagnostics, and AI assistant triage.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

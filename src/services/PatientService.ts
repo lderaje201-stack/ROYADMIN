@@ -67,7 +67,7 @@ export async function createPatient(patient: Omit<Patient, 'id' | 'created_at' |
     const { data, error } = await supabase
       .from('profiles')
       .insert([{
-        full_full_name: patient.full_name,
+        full_name: patient.full_name,
         phone: patient.phone,
         email: patient.email || null,
         role: 'patient'

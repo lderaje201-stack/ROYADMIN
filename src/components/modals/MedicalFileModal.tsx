@@ -5,7 +5,7 @@ import { X, FileUp, UploadCloud, FileText } from 'lucide-react';
 interface MedicalFileModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSave: (file: Omit<MedicalFile, 'id' | 'created_at'>) => void;
+  onSave: (file: Omit<MedicalFile, 'id' | 'created_at'>, actualFile?: File) => void;
   patients: Patient[];
 }
 
@@ -25,21 +25,28 @@ export const MedicalFileModal: React.FC<MedicalFileModalProps> = ({
   const [file_type, setFileType] = useState('DICOM / High-Res PNG');
   const [reviewed, setReviewed] = useState(false);
   const [notes, setNotes] = useState('');
+  const [actualFile, setActualFile] = useState<File | null>(null);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     const patientObj = patients.find(p => p.id === patient_id);
+    
+    if (!actualFile) {
+      alert("Please select a file to upload.");
+      return;
+    }
+
     onSave({
       patient_id,
       patient_name: patientObj ? patientObj.name : 'Unknown Patient',
       title: title || `${category} - ${patientObj?.name || 'Scan'}`,
       category,
       uploaded_by,
-      file_size,
-      file_type,
+      file_size: actualFile ? `${(actualFile.size / 1024 / 1024).toFixed(2)} MB` : file_size,
+      file_type: actualFile ? actualFile.type || 'application/octet-stream' : file_type,
       reviewed,
       notes
-    });
+    }, actualFile);
     onClose();
   };
 
@@ -122,10 +129,21 @@ export const MedicalFileModal: React.FC<MedicalFileModalProps> = ({
             </div>
           </div>
 
-          {/* Drag & Drop mockup */}
-          <div className="border-2 border-dashed border-slate-300 rounded-lg p-4 text-center hover:border-blue-500 bg-slate-50 transition-colors cursor-pointer">
+          {/* Real File Upload */}
+          <div className="border-2 border-dashed border-slate-300 rounded-lg p-4 text-center hover:border-blue-500 bg-slate-50 transition-colors relative cursor-pointer">
+            <input 
+              type="file" 
+              className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+              onChange={(e) => {
+                if (e.target.files && e.target.files.length > 0) {
+                  setActualFile(e.target.files[0]);
+                }
+              }}
+            />
             <UploadCloud className="w-8 h-8 text-blue-500 mx-auto mb-1" />
-            <p className="text-xs font-semibold text-slate-700">Drag & Drop DICOM or PDF files here</p>
+            <p className="text-xs font-semibold text-slate-700">
+              {actualFile ? actualFile.name : "Click or Drag & Drop DICOM or PDF files here"}
+            </p>
             <p className="text-[10px] text-slate-400 mt-0.5">Supports PNG, JPG, DICOM, STL, PDF up to 100MB</p>
           </div>
 

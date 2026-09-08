@@ -9,9 +9,9 @@ import {
 export async function getAllActivities(): Promise<ActivityItem[]> {
   try {
     const [bookingsRes, messagesRes, filesRes] = await Promise.all([
-      supabase.from('bookings').select('id, patient_name, status, created_at').order('created_at', { ascending: false }).limit(5),
-      supabase.from('messages').select('id, user_id, content, sender_role, created_at').order('created_at', { ascending: false }).limit(5),
-      supabase.from('medical_files').select('id, title, created_at').order('created_at', { ascending: false }).limit(5)
+      supabase.from('bookings').select('*').order('created_at', { ascending: false }).limit(5),
+      supabase.from('messages').select('*').order('created_at', { ascending: false }).limit(5),
+      supabase.from('medical_files').select('*').order('created_at', { ascending: false }).limit(5)
     ]);
 
     const items: { date: Date; activity: ActivityItem }[] = [];
@@ -34,12 +34,13 @@ export async function getAllActivities(): Promise<ActivityItem[]> {
 
     if (messagesRes.data) {
       for (const m of messagesRes.data) {
+        const text = m.message || m.content || m.text || m.body || '';
         items.push({
           date: new Date(m.created_at || Date.now()),
           activity: {
             id: `ACT-M-${m.id}`,
             title: m.sender_role === 'staff' ? 'Staff Sent Message' : 'New Patient Message',
-            description: m.content ? (m.content.length > 40 ? m.content.substring(0, 40) + '...' : m.content) : 'Message received',
+            description: text ? (text.length > 40 ? text.substring(0, 40) + '...' : text) : 'Message received',
             timestamp: m.created_at ? new Date(m.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'Recently',
             type: 'message',
             icon: 'MessageSquare'
@@ -55,7 +56,7 @@ export async function getAllActivities(): Promise<ActivityItem[]> {
           activity: {
             id: `ACT-F-${f.id}`,
             title: 'Medical File Uploaded',
-            description: f.title || 'Document added',
+            description: f.title || f.file_name || 'Document added',
             timestamp: f.created_at ? new Date(f.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'Recently',
             type: 'system',
             icon: 'FileText'

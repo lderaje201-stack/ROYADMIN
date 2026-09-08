@@ -5,23 +5,14 @@ import StaffAssistant from "./components/StaffAssistant";
  */
 
 import React, { useState, useEffect } from 'react';
-import { 
-  NavigationTab, 
-  Booking, 
-  Conversation, 
-  MedicalFile, 
-  Patient, 
-  TeamMember, 
-  ActivityItem, 
-  Toast, 
-  BookingStatus 
-} from './types';
+import { NavigationTab, Booking, Conversation, MedicalFile, Patient, TeamMember, ActivityItem, Toast, BookingStatus, Testimonial } from './types';
 import { getAllBookings, createBooking, updateBookingStatus, rescheduleBooking } from './services/BookingService';
 import { getAllConversations, sendMessage, markMessagesAsRead } from './services/MessagingService';
 import { getAllMedicalFiles, toggleFileReviewed, createMedicalFile } from './services/MedicalFileService';
 import { getAllPatients, createPatient } from './services/PatientService';
 import { getAllTeamMembers, saveTeamMember, toggleTeamPublished } from './services/TeamService';
 import { getAllActivities, createActivity } from './services/AnalyticsService';
+import { getAllTestimonials } from './services/TestimonialService';
 import { getAuthenticatedAdminUser, signOutAdmin } from './services/AuthService';
 import { subscribeToClinicUpdates } from './services/RealtimeService';
 import { supabase } from './lib/supabase';
@@ -66,6 +57,7 @@ export default function App() {
   const [patients, setPatients] = useState<Patient[]>([]);
   const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);
   const [activities, setActivities] = useState<ActivityItem[]>([]);
+  const [testimonials, setTestimonials] = useState<Testimonial[]>([]);
 
   const loadClinicData = async () => {
     setIsLoading(true);
@@ -143,11 +135,15 @@ export default function App() {
       if (table === 'bookings') {
         getAllBookings().then(setBookings);
         getAllActivities().then(setActivities);
+        getAllTestimonials().then(setTestimonials);
       } else if (table === 'messages') {
         getAllConversations().then(setConversations);
         getAllActivities().then(setActivities);
       } else if (table === 'medical_files') {
         getAllMedicalFiles().then(setMedicalFiles);
+        getAllActivities().then(setActivities);
+      } else if (table === 'testimonials') {
+        getAllTestimonials().then(setTestimonials);
         getAllActivities().then(setActivities);
       } else if (table === 'team_members') {
         getAllTeamMembers().then(setTeamMembers);
@@ -333,8 +329,8 @@ export default function App() {
     }
   };
 
-  const handleCreateMedicalFile = async (fileData: Omit<MedicalFile, 'id' | 'created_at'>) => {
-    const newFile = await createMedicalFile(fileData);
+  const handleCreateMedicalFile = async (fileData: Omit<MedicalFile, 'id' | 'created_at'>, actualFile?: File) => {
+    const newFile = await createMedicalFile(fileData, actualFile);
     if (newFile) {
       addToast('success', `Medical record uploaded.`);
       const f = await getAllMedicalFiles(); setMedicalFiles(f);
@@ -530,6 +526,8 @@ export default function App() {
 
             {activeTab === 'testimonials' && (
               <TestimonialsPage
+                testimonials={testimonials}
+                setTestimonials={setTestimonials}
                 searchQuery={searchQuery}
                 onToast={(type, msg) => addToast(type, msg)}
               />

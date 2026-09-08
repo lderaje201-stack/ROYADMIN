@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Testimonial } from '../../types';
-import { getAllTestimonials, toggleTestimonialFeatured } from '../../services/TestimonialService';
+import { getAllTestimonials, toggleTestimonialPublished, deleteTestimonial } from '../../services/TestimonialService';
 import { 
   Star, 
   Search, 
@@ -11,28 +11,32 @@ import {
   MessageSquare,
   Sparkles,
   RefreshCw,
-  Filter
+  Filter,
+  Trash2
 } from 'lucide-react';
 
 interface ReviewsPageProps {
+  testimonials: Testimonial[];
+  setTestimonials: React.Dispatch<React.SetStateAction<Testimonial[]>>;
   searchQuery: string;
   onToast: (type: 'success' | 'info' | 'warning' | 'error', msg: string) => void;
 }
 
-export const TestimonialsPage: React.FC<ReviewsPageProps> = ({ searchQuery, onToast }) => {
-  const [testimonials, setReviews] = useState<Testimonial[]>([]);
-  const [loading, setLoading] = useState(true);
+export const TestimonialsPage: React.FC<ReviewsPageProps> = ({ testimonials, setTestimonials, searchQuery, onToast }) => {
+  const loading = false;
   const [filterRating, setFilterRating] = useState<number | 'all'>('all');
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [reviewToDelete, setReviewToDelete] = useState<string | null>(null);
 
   const loadReviewsData = async () => {
-    setLoading(true);
+    
     try {
       const data = await getAllTestimonials();
-      setReviews(data);
+      setTestimonials(data);
     } catch (err) {
       console.error('Failed to load testimonials for admin:', err);
     } finally {
-      setLoading(false);
+      
     }
   };
 
@@ -40,26 +44,42 @@ export const TestimonialsPage: React.FC<ReviewsPageProps> = ({ searchQuery, onTo
     loadReviewsData();
   }, []);
 
-  const handleToggleFeatured = async (reviewId: string, currentStatus: boolean) => {
+  const handleTogglePublished = async (reviewId: string, currentStatus: boolean) => {
     const newStatus = !currentStatus;
-    // Optimistic state update
-    setReviews(prev => prev.map(r => r.id === reviewId ? { ...r, is_featured: newStatus } : r));
+    setTestimonials(prev => prev.map(r => r.id === reviewId ? { ...r, is_published: newStatus } : r));
 
     try {
-      const success = await toggleTestimonialFeatured(reviewId, newStatus);
+      const success = await toggleTestimonialPublished(reviewId, newStatus);
       if (success) {
         onToast(
           newStatus ? 'success' : 'info',
-          `Testimonial ${newStatus ? 'featured on public homepage' : 'removed from featured list'}.`
+          `Testimonial ${newStatus ? 'published to public site' : 'unpublished from public site'}.`
         );
       } else {
-        // Rollback on error
-        setReviews(prev => prev.map(r => r.id === reviewId ? { ...r, is_featured: currentStatus } : r));
+        setTestimonials(prev => prev.map(r => r.id === reviewId ? { ...r, is_published: currentStatus } : r));
         onToast('error', 'Failed to update testimonial status in database.');
       }
     } catch (err) {
-      setReviews(prev => prev.map(r => r.id === reviewId ? { ...r, is_featured: currentStatus } : r));
-      onToast('error', 'Error toggling featured status.');
+      setTestimonials(prev => prev.map(r => r.id === reviewId ? { ...r, is_published: currentStatus } : r));
+      onToast('error', 'An error occurred while updating.');
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!reviewToDelete) return;
+    try {
+      const success = await deleteTestimonial(reviewToDelete);
+      if (success) {
+        setTestimonials(prev => prev.filter(r => r.id !== reviewToDelete));
+        onToast('success', 'Testimonial deleted successfully.');
+      } else {
+        onToast('error', 'Failed to delete testimonial.');
+      }
+    } catch (err) {
+      onToast('error', 'An error occurred while deleting.');
+    } finally {
+      setDeleteModalOpen(false);
+      setReviewToDelete(null);
     }
   };
 
@@ -74,7 +94,7 @@ export const TestimonialsPage: React.FC<ReviewsPageProps> = ({ searchQuery, onTo
     return matchesSearch && matchesRating;
   });
 
-  const featuredCount = testimonials.filter(r => r.is_featured).length;
+  const publishedCount = testimonials.filter(r => r.is_published).length;
   const avgRating = testimonials.length > 0 
     ? (testimonials.reduce((sum, r) => sum + r.rating, 0) / testimonials.length).toFixed(1)
     : '0.0';
@@ -118,8 +138,8 @@ export const TestimonialsPage: React.FC<ReviewsPageProps> = ({ searchQuery, onTo
             <Globe className="w-5 h-5" />
           </div>
           <div>
-            <div className="text-xs text-slate-500 font-medium">Featured on Public Homepage</div>
-            <div className="text-xl font-bold text-emerald-700">{featuredCount}</div>
+            <div className="text-xs text-slate-500 font-medium">Published on Public Site</div>
+            <div className="text-xl font-bold text-emerald-700">{publishedCount}</div>
           </div>
         </div>
 
@@ -165,7 +185,7 @@ export const TestimonialsPage: React.FC<ReviewsPageProps> = ({ searchQuery, onTo
                 <th className="py-3.5 px-4">Rating</th>
                 <th className="py-3.5 px-4">Comment Text</th>
                 <th className="py-3.5 px-4">Submitted Date</th>
-                <th className="py-3.5 px-4 text-center">Featured on Public Site</th>
+                <th className="py-3.5 px-4 text-center">Status & Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 text-slate-800 font-medium">
@@ -220,28 +240,37 @@ export const TestimonialsPage: React.FC<ReviewsPageProps> = ({ searchQuery, onTo
                       {new Date(r.created_at).toLocaleString()}
                     </td>
 
-                    {/* Toggle Featured */}
-                    <td className="py-3.5 px-4 text-center">
+                    {/* Actions */}
+                    <td className="py-3.5 px-4 text-center flex items-center justify-center gap-2">
                       <button
-                        id={`toggle-featured-btn-${r.id}`}
-                        onClick={() => handleToggleFeatured(r.id, r.is_featured)}
+                        onClick={() => handleTogglePublished(r.id, r.is_published)}
                         className={`px-3 py-1.5 rounded-lg text-xs font-bold border transition-all inline-flex items-center gap-1.5 cursor-pointer ${
-                          r.is_featured
+                          r.is_published
                             ? 'bg-emerald-50 text-emerald-800 border-emerald-300 hover:bg-emerald-100'
                             : 'bg-slate-100 text-slate-600 border-slate-300 hover:bg-slate-200'
                         }`}
                       >
-                        {r.is_featured ? (
+                        {r.is_published ? (
                           <>
                             <Globe className="w-3.5 h-3.5 text-emerald-600" />
-                            <span>Featured (Live)</span>
+                            <span>Published (Live)</span>
                           </>
                         ) : (
                           <>
                             <EyeOff className="w-3.5 h-3.5 text-slate-400" />
-                            <span>Not Featured</span>
+                            <span>Hidden</span>
                           </>
                         )}
+                      </button>
+                      <button
+                        onClick={() => {
+                          setReviewToDelete(r.id);
+                          setDeleteModalOpen(true);
+                        }}
+                        className="p-1.5 text-rose-500 hover:bg-rose-50 rounded-lg transition-colors cursor-pointer"
+                        title="Delete Testimonial"
+                      >
+                        <Trash2 className="w-4 h-4" />
                       </button>
                     </td>
                   </tr>
@@ -251,6 +280,40 @@ export const TestimonialsPage: React.FC<ReviewsPageProps> = ({ searchQuery, onTo
           </table>
         </div>
       </div>
+
+      {/* Delete Confirmation Modal */}
+      {deleteModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="bg-white rounded-2xl shadow-xl w-full max-w-sm overflow-hidden animate-in zoom-in-95 duration-200">
+            <div className="p-6">
+              <div className="w-12 h-12 rounded-full bg-rose-100 text-rose-600 flex items-center justify-center mb-4 mx-auto">
+                <AlertCircle className="w-6 h-6" />
+              </div>
+              <h3 className="text-lg font-bold text-slate-900 text-center mb-2">Delete Testimonial?</h3>
+              <p className="text-sm text-slate-500 text-center mb-6">
+                Are you sure you want to delete this patient testimonial? This action cannot be undone.
+              </p>
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={() => {
+                    setDeleteModalOpen(false);
+                    setReviewToDelete(null);
+                  }}
+                  className="flex-1 px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-sm font-semibold rounded-xl transition-colors cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleDelete}
+                  className="flex-1 px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white text-sm font-semibold rounded-xl transition-colors cursor-pointer"
+                >
+                  Delete
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

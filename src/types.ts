@@ -18,6 +18,7 @@ export interface Testimonial {
   rating: number;
   comment: string;
   is_featured: boolean;
+  is_published: boolean;
   created_at: string;
 }
 

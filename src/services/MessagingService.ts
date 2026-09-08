@@ -3,71 +3,157 @@ import { Conversation, MessageItem } from '../types';
 
 export async function getAllConversations(): Promise<Conversation[]> {
   try {
-    const { data: convs, error } = await supabase
-      .from('conversations')
-      .select(`
-        id,
-        patient_id,
-        status,
-        last_message_at,
-        patient:profiles!conversations_patient_id_fkey(full_name, phone, avatar_url),
-        messages:messages!messages_conversation_id_fkey(id, sender_role, content, is_read, created_at, sender:profiles!messages_sender_id_fkey(full_name))
-      `)
-      .order('last_message_at', { ascending: false });
+    const [convsRes, profilesRes, messagesRes] = await Promise.all([
+      supabase.from('conversations').select('*').order('last_message_at', { ascending: false }),
+      supabase.from('profiles').select('id, full_name, phone, avatar_url, role'),
+      supabase.from('messages').select('*').order('created_at', { ascending: true })
+    ]);
 
-    if (error || !convs) {
-      console.error('Error fetching conversations:', error);
-      return [];
+    const profilesMap = new Map<string, any>();
+    if (profilesRes.data) {
+      for (const p of profilesRes.data) {
+        profilesMap.set(p.id, p);
+      }
     }
 
-    return convs.map((c: any) => {
-      const pName = Array.isArray(c.patient) ? 'Unknown' : (c.patient?.full_name || 'Patient');
-      const pPhone = Array.isArray(c.patient) ? '' : (c.patient?.phone || '');
-      const pAvatar = Array.isArray(c.patient) ? '' : (c.patient?.avatar_url || '');
+    const allMessages = messagesRes.data || [];
 
-      let unreadCount = 0;
-      let lastMsgContent = 'Tap to view messages';
-      let lastMsgTimestamp = c.last_message_at;
+    // Group messages by conversation_id and user_id
+    const messagesByConv = new Map<string, any[]>();
+    const messagesByUser = new Map<string, any[]>();
 
-      const rawMessages = Array.isArray(c.messages) ? c.messages : [];
-      const mappedMessages = rawMessages
-        .sort((a: any, b: any) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime())
-        .map((m: any) => {
-          const sName = m.sender && !Array.isArray(m.sender) ? m.sender.full_name : 'User';
+    for (const m of allMessages) {
+      if (m.conversation_id) {
+        if (!messagesByConv.has(m.conversation_id)) {
+          messagesByConv.set(m.conversation_id, []);
+        }
+        messagesByConv.get(m.conversation_id)!.push(m);
+      }
+      if (m.user_id) {
+        if (!messagesByUser.has(m.user_id)) {
+          messagesByUser.set(m.user_id, []);
+        }
+        messagesByUser.get(m.user_id)!.push(m);
+      }
+    }
+
+    // If conversations table has records, map each conversation
+    if (convsRes.data && convsRes.data.length > 0) {
+      return convsRes.data.map((c: any) => {
+        const patientId = c.patient_id || c.user_id || '';
+        const prof = profilesMap.get(patientId);
+        const pName = c.patient_name || prof?.full_name || 'Patient';
+        const pPhone = c.patient_phone || prof?.phone || '';
+        const pAvatar = c.patient_avatar || prof?.avatar_url || '';
+
+        const rawMessages = messagesByConv.get(c.id) || (patientId ? messagesByUser.get(patientId) : []) || [];
+        let unreadCount = 0;
+
+        const mappedMessages: MessageItem[] = rawMessages.map((m: any) => {
           const isStaff = m.sender_role === 'staff' || m.sender_role === 'admin' || m.sender_role === 'doctor';
-          
-          if (!isStaff && !m.is_read) unreadCount++;
+          const senderProf = m.sender_id ? profilesMap.get(m.sender_id) : (m.user_id ? profilesMap.get(m.user_id) : null);
+          const sName = isStaff ? 'Staff Desk' : (senderProf?.full_name || m.sender_name || pName || 'User');
+          const msgText = m.message || m.content || m.text || m.body || '';
+
+          if (!isStaff && !m.is_read) {
+            unreadCount++;
+          }
 
           return {
             id: m.id,
             sender: isStaff ? ('staff' as const) : ('patient' as const),
-            sender_name: isStaff ? 'Staff Desk' : sName,
-            text: m.content || '',
+            sender_name: sName,
+            text: msgText,
             is_read: m.is_read || false,
             timestamp: m.created_at ? new Date(m.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'Just now',
-            attachments: []
+            attachment_url: m.attachment_url || m.file_url || (m.attachments && m.attachments[0]?.url) || undefined,
+            attachments: m.attachments || []
           };
         });
 
+        let lastMsgContent = c.last_message || 'Tap to view messages';
+        let lastMsgTimestamp = c.last_message_at;
+
+        if (mappedMessages.length > 0) {
+          const lastM = mappedMessages[mappedMessages.length - 1];
+          lastMsgContent = lastM.text || lastMsgContent;
+          const rawLast = rawMessages[rawMessages.length - 1];
+          lastMsgTimestamp = rawLast?.created_at || lastMsgTimestamp;
+        }
+
+        return {
+          id: c.id,
+          patient_id: patientId,
+          patient_name: pName,
+          patient_phone: pPhone,
+          patient_avatar: pAvatar,
+          last_message: lastMsgContent,
+          last_timestamp: lastMsgTimestamp ? new Date(lastMsgTimestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '',
+          unread_count: unreadCount,
+          messages: mappedMessages,
+          assigned_doctor: c.assigned_doctor || 'Dr. Faisal Al-Sabah'
+        };
+      });
+    }
+
+    // Fallback: If conversations table is empty, derive conversations from messages and patient profiles
+    const userIds = new Set<string>();
+    for (const m of allMessages) {
+      if (m.user_id) userIds.add(m.user_id);
+    }
+    if (profilesRes.data) {
+      for (const p of profilesRes.data) {
+        if (p.role === 'patient') userIds.add(p.id);
+      }
+    }
+
+    const conversationsList: Conversation[] = [];
+
+    for (const uId of Array.from(userIds)) {
+      const prof = profilesMap.get(uId);
+      const rawMessages = messagesByUser.get(uId) || [];
+      let unreadCount = 0;
+
+      const mappedMessages: MessageItem[] = rawMessages.map((m: any) => {
+        const isStaff = m.sender_role === 'staff' || m.sender_role === 'admin' || m.sender_role === 'doctor';
+        const msgText = m.message || m.content || m.text || m.body || '';
+        if (!isStaff && !m.is_read) unreadCount++;
+
+        return {
+          id: m.id,
+          sender: isStaff ? ('staff' as const) : ('patient' as const),
+          sender_name: isStaff ? 'Staff Desk' : (prof?.full_name || 'Patient'),
+          text: msgText,
+          is_read: m.is_read || false,
+          timestamp: m.created_at ? new Date(m.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'Just now',
+          attachment_url: m.attachment_url || m.file_url || undefined,
+          attachments: []
+        };
+      });
+
+      let lastMsgContent = 'Tap to view messages';
+      let lastMsgTimestamp = '';
       if (rawMessages.length > 0) {
-        const lastM = rawMessages[rawMessages.length - 1];
-        lastMsgContent = lastM.content || 'New message';
-        lastMsgTimestamp = lastM.created_at || lastMsgTimestamp;
+        const lastRaw = rawMessages[rawMessages.length - 1];
+        lastMsgContent = lastRaw.message || lastRaw.content || lastRaw.text || 'New message';
+        lastMsgTimestamp = lastRaw.created_at;
       }
 
-      return {
-        id: c.id,
-        patient_id: c.patient_id || '',
-        patient_name: pName,
-        patient_phone: pPhone,
-        patient_avatar: pAvatar,
+      conversationsList.push({
+        id: uId,
+        patient_id: uId,
+        patient_name: prof?.full_name || 'Patient',
+        patient_phone: prof?.phone || '',
+        patient_avatar: prof?.avatar_url || '',
         last_message: lastMsgContent,
         last_timestamp: lastMsgTimestamp ? new Date(lastMsgTimestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '',
-        unread_count: unreadCount, 
+        unread_count: unreadCount,
         messages: mappedMessages,
-        assigned_doctor: 'Clinic Staff'
-      };
-    });
+        assigned_doctor: 'Dr. Faisal Al-Sabah'
+      });
+    }
+
+    return conversationsList;
   } catch (err) {
     console.error('Error in getAllConversations:', err);
     return [];
@@ -97,15 +183,22 @@ export async function uploadMessageAttachment(file: File): Promise<string | null
 
 export async function markMessagesAsRead(conversationId: string, readerRole: 'staff' | 'patient' = 'staff'): Promise<boolean> {
   try {
-    const { error } = await supabase
+    let res = await supabase
       .from('messages')
       .update({ is_read: true })
       .eq('conversation_id', conversationId)
       .neq('sender_role', readerRole)
       .eq('is_read', false);
       
-    if (error) return false;
-    return true;
+    if (res.error) {
+      res = await supabase
+        .from('messages')
+        .update({ is_read: true })
+        .eq('user_id', conversationId)
+        .neq('sender_role', readerRole)
+        .eq('is_read', false);
+    }
+    return !res.error;
   } catch (err) {
     console.error('Error marking messages as read:', err);
     return false;
@@ -117,18 +210,37 @@ export async function sendMessage(conversationId: string, text: string, senderNa
     const { data: { session } } = await supabase.auth.getSession();
     const senderId = session?.user?.id;
     
-    const { error } = await supabase.from('messages').insert([{
+    // Try inserting message with message column first
+    let insertRes = await supabase.from('messages').insert([{
       conversation_id: conversationId,
       sender_id: senderId || null,
+      user_id: conversationId || null,
       sender_role: 'staff',
-      content: text,
-      is_read: false
+      message: text,
+      is_read: false,
+      ...(attachmentUrl ? { attachment_url: attachmentUrl } : {})
     }]);
 
-    if (!error) {
-      await supabase.from('conversations').update({ last_message_at: new Date().toISOString() }).eq('id', conversationId);
+    // If that fails, try with content column
+    if (insertRes.error) {
+      insertRes = await supabase.from('messages').insert([{
+        conversation_id: conversationId,
+        sender_id: senderId || null,
+        user_id: conversationId || null,
+        sender_role: 'staff',
+        content: text,
+        is_read: false,
+        ...(attachmentUrl ? { attachment_url: attachmentUrl } : {})
+      }]);
+    }
+
+    if (!insertRes.error) {
+      try {
+        await supabase.from('conversations').update({ last_message_at: new Date().toISOString() }).eq('id', conversationId);
+      } catch (ignored) {}
       return true;
     }
+    console.error('Error sending message:', insertRes.error);
     return false;
   } catch (err) {
     console.error('Error sending message:', err);

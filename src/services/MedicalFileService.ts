@@ -3,30 +3,36 @@ import { MedicalFile } from '../types';
 
 export async function getAllMedicalFiles(): Promise<MedicalFile[]> {
   try {
-    const { data: files, error } = await supabase
-      .from('medical_files')
-      .select(`
-        *,
-        patient:profiles!medical_files_user_id_fkey(full_name)
-      `)
-      .order('created_at', { ascending: false });
+    const [filesRes, profilesRes] = await Promise.all([
+      supabase.from('medical_files').select('*').order('created_at', { ascending: false }),
+      supabase.from('profiles').select('id, full_name')
+    ]);
 
-    if (error || !files) {
-      console.error('Error fetching medical files:', error);
+    if (filesRes.error || !filesRes.data) {
+      console.error('Error fetching medical files:', filesRes.error);
       return [];
     }
 
-    return files.map((f: any) => {
-      const pName = Array.isArray(f.patient) ? 'Unknown' : (f.patient?.full_name || 'Patient');
+    const profilesMap = new Map<string, string>();
+    if (profilesRes.data) {
+      for (const p of profilesRes.data) {
+        profilesMap.set(p.id, p.full_name || 'Patient');
+      }
+    }
+
+    return filesRes.data.map((f: any) => {
+      const patientId = f.user_id || f.patient_id || '';
+      const patientName = f.patient_name || profilesMap.get(patientId) || 'Patient';
+
       return {
         id: f.id,
-        patient_id: f.user_id || '',
-        patient_name: pName,
+        patient_id: patientId,
+        patient_name: patientName,
         title: f.title || f.file_name || 'Medical Record',
         category: f.category || 'General',
         created_at: f.created_at ? new Date(f.created_at).toLocaleDateString() : 'N/A',
         uploaded_by: f.uploaded_by || 'Clinical Diagnostic',
-        file_size: f.size_bytes ? `${(f.size_bytes / 1024 / 1024).toFixed(2)} MB` : 'Unknown Size',
+        file_size: f.size_bytes ? `${(f.size_bytes / 1024 / 1024).toFixed(2)} MB` : (f.file_size || 'Unknown Size'),
         file_type: f.file_type || 'PDF',
         reviewed: f.reviewed !== false,
         notes: f.notes || '',

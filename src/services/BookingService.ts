@@ -7,57 +7,55 @@ import { Booking, BookingStatus } from '../types';
 
 export async function getAllBookings(): Promise<Booking[]> {
   try {
-    const { data: bookings, error } = await supabase
-      .from('bookings')
-      .select(`
-        *,
-        patient:profiles!bookings_user_id_fkey(full_name, phone, avatar_url),
-        service:services!bookings_service_id_fkey(title),
-        doctor:team_members!bookings_doctor_id_fkey(full_name, credentials, room_number)
-      `)
-      .order('created_at', { ascending: false });
+    const [bookingsRes, profilesRes, servicesRes, teamRes] = await Promise.all([
+      supabase.from('bookings').select('*').order('created_at', { ascending: false }),
+      supabase.from('profiles').select('id, full_name, phone, avatar_url'),
+      supabase.from('services').select('id, title'),
+      supabase.from('team_members').select('id, full_name, credentials, room_number')
+    ]);
 
-    if (error || !bookings) {
-      console.error('Error fetching bookings:', error);
+    if (bookingsRes.error || !bookingsRes.data) {
+      console.error('Error fetching bookings:', bookingsRes.error);
       return [];
     }
 
-    return bookings.map((b: any) => {
-      // Handle the fact that foreign keys might be missing or different depending on exact setup
-      // We will gracefully fallback if relations aren't exactly named
-      let pName = 'Unknown Patient';
-      let pPhone = 'N/A';
-      let pAvatar = '';
-      if (b.patient && !Array.isArray(b.patient)) {
-          pName = b.patient.full_name || pName;
-          pPhone = b.patient.phone || pPhone;
-          pAvatar = b.patient.avatar_url || pAvatar;
-      } else if (b.profiles && !Array.isArray(b.profiles)) {
-          pName = b.profiles.full_name || pName;
-          pPhone = b.profiles.phone || pPhone;
-          pAvatar = b.profiles.avatar_url || pAvatar;
+    const profilesMap = new Map<string, any>();
+    if (profilesRes.data) {
+      for (const p of profilesRes.data) {
+        profilesMap.set(p.id, p);
       }
+    }
 
-      let sTitle = 'Consultation';
-      if (b.service && !Array.isArray(b.service)) {
-          sTitle = b.service.title || sTitle;
-      } else if (b.services && !Array.isArray(b.services)) {
-          sTitle = b.services.title || sTitle;
+    const servicesMap = new Map<string, any>();
+    if (servicesRes.data) {
+      for (const s of servicesRes.data) {
+        servicesMap.set(s.id, s);
       }
+    }
 
-      let dName = 'Unassigned';
-      let dRoom = 'TBD';
-      if (b.doctor && !Array.isArray(b.doctor)) {
-          dName = b.doctor.full_name || dName;
-          dRoom = b.doctor.room_number || b.doctor.credentials || dRoom;
-      } else if (b.team_members && !Array.isArray(b.team_members)) {
-          dName = b.team_members.full_name || dName;
-          dRoom = b.team_members.room_number || b.team_members.credentials || dRoom;
+    const teamMap = new Map<string, any>();
+    if (teamRes.data) {
+      for (const t of teamRes.data) {
+        teamMap.set(t.id, t);
       }
+    }
+
+    return bookingsRes.data.map((b: any) => {
+      const patientId = b.user_id || b.patient_id || '';
+      const prof = profilesMap.get(patientId);
+      const serv = servicesMap.get(b.service_id);
+      const doc = teamMap.get(b.doctor_id);
+
+      const pName = b.patient_name || prof?.full_name || 'Patient';
+      const pPhone = b.patient_phone || prof?.phone || 'N/A';
+      const pAvatar = b.patient_avatar || prof?.avatar_url || '';
+      const sTitle = b.service || serv?.title || 'Consultation';
+      const dName = b.doctor_name || doc?.full_name || 'Dr. Faisal Al-Sabah';
+      const dRoom = b.room_number || doc?.room_number || doc?.credentials || 'Suite 101';
 
       return {
         id: b.id,
-        patient_id: b.user_id || '',
+        patient_id: patientId,
         patient_name: pName,
         patient_phone: pPhone,
         patient_avatar: pAvatar,
@@ -65,12 +63,12 @@ export async function getAllBookings(): Promise<Booking[]> {
         service_id: b.service_id,
         doctor_name: dName,
         doctor_id: b.doctor_id,
-        date: b.preferred_date || 'Today',
-        time: b.preferred_time || '09:00 AM',
-        room_number: b.room_number || dRoom,
+        date: b.preferred_date || b.date || 'Today',
+        time: b.preferred_time || b.time || '09:00 AM',
+        room_number: dRoom,
         status: (b.status as BookingStatus) || 'Pending',
         notes: b.notes || '',
-        created_at: b.created_at
+        created_at: b.created_at || new Date().toISOString()
       };
     });
   } catch (err) {

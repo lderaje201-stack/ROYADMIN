@@ -35,6 +35,7 @@ export async function getAllTestimonials(): Promise<Testimonial[]> {
         rating: typeof r.rating === 'number' ? r.rating : 5,
         comment: r.comment || '',
         is_featured: r.is_featured === true,
+        is_published: r.is_published === true,
         created_at: r.created_at || new Date().toISOString()
       };
     });
@@ -61,6 +62,32 @@ export async function toggleTestimonialFeatured(reviewId: string, isFeatured: bo
     return true;
   } catch (err) {
     console.error('Error in toggleTestimonialFeatured:', err);
+    return false;
+  }
+}
+
+export async function toggleTestimonialPublished(reviewId: string, isPublished: boolean): Promise<boolean> {
+  try {
+    const { error } = await supabase
+      .from('testimonials')
+      .update({ is_published: isPublished })
+      .eq('id', reviewId);
+    return !error;
+  } catch (err) {
+    console.error('Error in toggleTestimonialPublished:', err);
+    return false;
+  }
+}
+
+export async function deleteTestimonial(reviewId: string): Promise<boolean> {
+  try {
+    const { error } = await supabase
+      .from('testimonials')
+      .delete()
+      .eq('id', reviewId);
+    return !error;
+  } catch (err) {
+    console.error('Error in deleteTestimonial:', err);
     return false;
   }
 }

@@ -97,7 +97,7 @@ export const OverviewPage: React.FC<OverviewPageProps> = ({
               Clinic Open: 09:00 - 21:00
             </span>
           </div>
-          <h2 className="text-xl font-bold tracking-tight text-slate-900">Good day, {adminProfile?.name || 'Administrator'}</h2>
+          <h2 className="text-xl font-bold tracking-tight text-slate-900">Good day, {adminProfile?.full_name || 'Administrator'}</h2>
           <p className="text-xs text-slate-500 mt-1 max-w-xl leading-relaxed">
             You have <span className="text-rose-600 font-semibold">{pendingBookings} pending booking requests</span> and <span className="text-rose-600 font-semibold">{unreadMessages} unread patient messages</span> waiting for staff testimonial.
           </p>

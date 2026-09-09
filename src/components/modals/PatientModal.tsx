@@ -22,7 +22,7 @@ export const PatientModal: React.FC<PatientModalProps> = ({
   const [email, setEmail] = useState('');
   const [gender, setGender] = useState<'Male' | 'Female' | 'Other'>('Female');
   const [age, setAge] = useState<number>(30);
-  const [assigned_doctor, setAssignedDoctor] = useState(teamMembers[0]?.name || 'Dr. Faisal Al-Sabah');
+  const [assigned_doctor, setAssignedDoctor] = useState(teamMembers[0]?.full_name || 'Dr. Faisal Al-Sabah');
   const [medical_alerts, setMedicalAlerts] = useState<string>('');
   const [status, setStatus] = useState<'Active' | 'Inactive'>('Active');
 
@@ -33,7 +33,7 @@ export const PatientModal: React.FC<PatientModalProps> = ({
       : [];
 
     onSave({
-      name,
+      full_name: name,
       phone,
       email: email || `${name.toLowerCase().replace(/\s+/g, '.')}@example.com`,
       gender,
@@ -155,8 +155,8 @@ export const PatientModal: React.FC<PatientModalProps> = ({
               className="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-xs text-slate-800 focus:ring-2 focus:ring-blue-600 focus:outline-none"
             >
               {teamMembers.map(tm => (
-                <option key={tm.id} value={tm.name}>
-                  {tm.name} ({tm.specialty})
+                <option key={tm.id} value={tm.full_name}>
+                  {tm.full_name} ({tm.specialty})
                 </option>
               ))}
             </select>

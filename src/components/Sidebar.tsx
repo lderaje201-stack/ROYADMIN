@@ -40,7 +40,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
   isCollapsed,
   onToggleCollapse
 }) => {
-  const isAdmin = (adminProfile?.role || '').toLowerCase() === 'admin';
+  const role = (adminProfile?.role || '').toLowerCase();
+  const isAdmin = role === 'admin';
+  const isStaff = role === 'staff';
+  const isDoctor = role === 'doctor';
 
   const allNavItems = [
     {
@@ -48,15 +51,15 @@ export const Sidebar: React.FC<SidebarProps> = ({
       label: 'Overview',
       icon: LayoutDashboard,
       badge: null,
-      adminOnly: false
+      allowedRoles: ['admin', 'staff', 'doctor']
     },
     {
       id: 'bookings' as NavigationTab,
-      label: 'Bookings',
+      label: isDoctor ? 'My Bookings' : 'Bookings',
       icon: CalendarCheck,
       badge: pendingBookingsCount > 0 ? pendingBookingsCount : null,
       badgeColor: 'bg-rose-500 text-white',
-      adminOnly: true
+      allowedRoles: ['admin', 'staff', 'doctor']
     },
     {
       id: 'messages' as NavigationTab,
@@ -64,7 +67,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
       icon: MessageSquare,
       badge: unreadMessagesCount > 0 ? unreadMessagesCount : null,
       badgeColor: 'bg-rose-500 text-white',
-      adminOnly: true
+      allowedRoles: ['admin', 'staff', 'doctor']
     },
     {
       id: 'medical-files' as NavigationTab,
@@ -72,46 +75,47 @@ export const Sidebar: React.FC<SidebarProps> = ({
       icon: FolderHeart,
       badge: unreviewedFilesCount > 0 ? unreviewedFilesCount : null,
       badgeColor: 'bg-rose-500 text-white',
-      adminOnly: true
+      allowedRoles: ['admin', 'staff', 'doctor']
     },
     {
       id: 'patients' as NavigationTab,
-      label: 'Patients',
+      label: isDoctor ? 'My Patients' : 'Patients',
       icon: Users,
       badge: null,
-      adminOnly: true
+      allowedRoles: ['admin', 'staff', 'doctor']
     },
     {
       id: 'team-members' as NavigationTab,
       label: 'Team Members',
       icon: UserRoundCog,
       badge: null,
-      adminOnly: true
+      allowedRoles: ['admin', 'staff']
     },
     {
       id: 'testimonials' as NavigationTab,
-      label: 'Patient Testimonials',
+      label: isDoctor ? 'My Testimonials' : 'Patient Testimonials',
       icon: Star,
       badge: null,
-      adminOnly: false
+      allowedRoles: ['admin', 'staff', 'doctor']
     },
     {
       id: 'analytics' as NavigationTab,
       label: 'Analytics',
       icon: BarChart3,
       badge: null,
-      adminOnly: true
+      allowedRoles: ['admin', 'staff']
     },
     {
       id: 'settings' as NavigationTab,
       label: 'Settings',
       icon: Settings,
       badge: null,
-      adminOnly: false
+      allowedRoles: ['admin', 'staff', 'doctor']
     }
   ];
 
-  const navItems = allNavItems.filter(item => !item.adminOnly || isAdmin);
+  const currentRole = role || 'admin';
+  const navItems = allNavItems.filter(item => item.allowedRoles.includes(currentRole) || isAdmin);
 
   return (
     <aside 

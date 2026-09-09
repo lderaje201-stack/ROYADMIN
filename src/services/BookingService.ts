@@ -11,7 +11,7 @@ export async function getAllBookings(): Promise<Booking[]> {
       supabase.from('bookings').select('*').order('created_at', { ascending: false }),
       supabase.from('profiles').select('id, full_name, phone, avatar_url'),
       supabase.from('services').select('id, title'),
-      supabase.from('team_members').select('id, full_name, credentials, room_number')
+      supabase.from('team_members').select('id, full_name, credentials')
     ]);
 
     if (bookingsRes.error || !bookingsRes.data) {
@@ -41,7 +41,7 @@ export async function getAllBookings(): Promise<Booking[]> {
     }
 
     return bookingsRes.data.map((b: any) => {
-      const patientId = b.user_id || b.patient_id || '';
+      const patientId = b.patient_id || b.user_id || '';
       const prof = profilesMap.get(patientId);
       const serv = servicesMap.get(b.service_id);
       const doc = teamMap.get(b.doctor_id);
@@ -51,7 +51,11 @@ export async function getAllBookings(): Promise<Booking[]> {
       const pAvatar = b.patient_avatar || prof?.avatar_url || '';
       const sTitle = b.service || serv?.title || 'Consultation';
       const dName = b.doctor_name || doc?.full_name || 'Dr. Faisal Al-Sabah';
-      const dRoom = b.room_number || doc?.room_number || doc?.credentials || 'Suite 101';
+      const dRoom = b.room_number || doc?.credentials || 'Suite 101';
+
+      // Normalize status case: e.g. "confirmed" -> "Confirmed", "completed" -> "Completed"
+      const rawStatus = b.status || 'Pending';
+      const normalizedStatus = (rawStatus.charAt(0).toUpperCase() + rawStatus.slice(1).toLowerCase()) as BookingStatus;
 
       return {
         id: b.id,
@@ -63,10 +67,10 @@ export async function getAllBookings(): Promise<Booking[]> {
         service_id: b.service_id,
         doctor_name: dName,
         doctor_id: b.doctor_id,
-        date: b.preferred_date || b.date || 'Today',
-        time: b.preferred_time || b.time || '09:00 AM',
+        date: b.booking_date || b.preferred_date || b.date || 'Today',
+        time: b.booking_time || b.preferred_time || b.time || '09:00 AM',
         room_number: dRoom,
-        status: (b.status as BookingStatus) || 'Pending',
+        status: normalizedStatus,
         notes: b.notes || '',
         created_at: b.created_at || new Date().toISOString()
       };
@@ -77,16 +81,26 @@ export async function getAllBookings(): Promise<Booking[]> {
   }
 }
 
+export async function getBookingsByPatientId(patientId: string): Promise<Booking[]> {
+  try {
+    const all = await getAllBookings();
+    return all.filter(b => b.patient_id === patientId);
+  } catch (err) {
+    console.error('Error in getBookingsByPatientId:', err);
+    return [];
+  }
+}
+
 export async function createBooking(booking: Omit<Booking, 'id' | 'created_at'>): Promise<Booking | null> {
   try {
     const { data, error } = await supabase
       .from('bookings')
       .insert([{
-        user_id: booking.patient_id || null,
+        patient_id: booking.patient_id || null,
         service_id: booking.service_id || null,
         doctor_id: booking.doctor_id || null,
-        preferred_date: booking.date,
-        preferred_time: booking.time,
+        booking_date: booking.date,
+        booking_time: booking.time,
         notes: booking.notes,
         room_number: booking.room_number,
         status: booking.status || 'Pending'
@@ -128,7 +142,7 @@ export async function rescheduleBooking(id: string, date: string, time: string):
   try {
     const { error } = await supabase
       .from('bookings')
-      .update({ preferred_date: date, preferred_time: time, updated_at: new Date().toISOString() })
+      .update({ booking_date: date, booking_time: time, updated_at: new Date().toISOString() })
       .eq('id', id);
     return !error;
   } catch (err) {

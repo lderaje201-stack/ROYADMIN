@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Conversation, Patient, NavigationTab } from '../../types';
 import { uploadMessageAttachment } from '../../services/MessagingService';
 import { 
@@ -38,6 +38,8 @@ interface MessagesPageProps {
   searchQuery: string;
   onShowToast?: (type: 'success' | 'info' | 'warning' | 'error', message: string) => void;
   onNavigateTab?: (tab: NavigationTab) => void;
+  targetPatientId?: string | null;
+  targetConversationId?: string | null;
 }
 
 interface CustomPatientDetail {
@@ -53,9 +55,29 @@ export const MessagesPage: React.FC<MessagesPageProps> = ({
   onMarkAsRead,
   searchQuery,
   onShowToast,
-  onNavigateTab
+  onNavigateTab,
+  targetPatientId,
+  targetConversationId
 }) => {
-  const [selectedConvId, setSelectedConvId] = useState<string>(conversations[0]?.id || '');
+  const [selectedConvId, setSelectedConvId] = useState<string>(() => {
+    if (targetConversationId) return targetConversationId;
+    if (targetPatientId) {
+      const match = conversations.find(c => c.patient_id === targetPatientId);
+      if (match) return match.id;
+    }
+    return conversations[0]?.id || '';
+  });
+
+  useEffect(() => {
+    if (targetConversationId) {
+      setSelectedConvId(targetConversationId);
+    } else if (targetPatientId) {
+      const match = conversations.find(c => c.patient_id === targetPatientId);
+      if (match) {
+        setSelectedConvId(match.id);
+      }
+    }
+  }, [targetConversationId, targetPatientId, conversations]);
   const [replyText, setReplyText] = useState('');
   const [showTemplatesDropdown, setShowTemplatesDropdown] = useState(false);
   const [profileSearchQuery, setProfileSearchQuery] = useState('');

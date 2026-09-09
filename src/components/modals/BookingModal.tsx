@@ -21,10 +21,10 @@ export const BookingModal: React.FC<BookingModalProps> = ({
   if (!isOpen) return null;
 
   const [selectedPatientId, setSelectedPatientId] = useState(patients[0]?.id || '');
-  const [patientNameInput, setPatientNameInput] = useState(patients[0]?.name || '');
+  const [patientNameInput, setPatientNameInput] = useState(patients[0]?.full_name || '');
   const [patientPhoneInput, setPatientPhoneInput] = useState(patients[0]?.phone || '');
   const [service, setService] = useState('Orthodontic Consultation (Invisalign)');
-  const [doctor_name, setDoctorName] = useState(teamMembers[0]?.name || 'Dr. Faisal Al-Sabah');
+  const [doctor_name, setDoctorName] = useState(teamMembers[0]?.full_name || 'Dr. Faisal Al-Sabah');
   const [date, setDate] = useState('2026-07-30');
   const [time, setTime] = useState('10:00 AM');
   const [room_number, setRoomNumber] = useState('Suite 101');
@@ -44,7 +44,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({
     setSelectedPatientId(pId);
     const found = patients.find(p => p.id === pId);
     if (found) {
-      setPatientNameInput(found.name);
+      setPatientNameInput(found.full_name || '');
       setPatientPhoneInput(found.phone);
     }
   };
@@ -157,8 +157,8 @@ export const BookingModal: React.FC<BookingModalProps> = ({
                 className="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-xs text-slate-800 focus:ring-2 focus:ring-blue-600 focus:outline-none"
               >
                 {teamMembers.map(tm => (
-                  <option key={tm.id} value={tm.name}>
-                    {tm.name} ({tm.specialty})
+                  <option key={tm.id} value={tm.full_name}>
+                    {tm.full_name} ({tm.specialty})
                   </option>
                 ))}
               </select>

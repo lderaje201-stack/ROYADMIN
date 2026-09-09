@@ -26,16 +26,21 @@ export async function getAllTestimonials(): Promise<Testimonial[]> {
     }
 
     return reviewsRes.data.map((r: any) => {
-      const prof = profileMap.get(r.user_id);
+      const patientId = r.patient_id || r.user_id || '';
+      const prof = profileMap.get(patientId) || (r.user_id ? profileMap.get(r.user_id) : null);
+      const displayName = r.patient_name || prof?.full_name || 'Patient';
       return {
         id: r.id,
-        user_id: r.user_id || '',
-        user_name: prof?.full_name || 'Patient',
+        user_id: patientId,
+        patient_id: patientId,
+        patient_name: displayName,
+        user_name: displayName,
         user_avatar: prof?.avatar_url || '',
         rating: typeof r.rating === 'number' ? r.rating : 5,
         comment: r.comment || '',
         is_featured: r.is_featured === true,
         is_published: r.is_published === true,
+        is_anonymous: r.is_anonymous === true,
         created_at: r.created_at || new Date().toISOString()
       };
     });

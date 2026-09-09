@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { TeamMember } from '../../types';
-import { X, UserCheck, Image, Shield } from 'lucide-react';
+import { X, UserCheck, Image, Shield, Link2 } from 'lucide-react';
+import { getStaffProfiles } from '../../services/TeamService';
 
 interface TeamMemberModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSave: (member: TeamMember) => void;
+  onSave: (member: TeamMember, actualFile?: File) => void;
   editingMember?: TeamMember | null;
 }
 
@@ -15,8 +16,6 @@ export const TeamMemberModal: React.FC<TeamMemberModalProps> = ({
   onSave,
   editingMember
 }) => {
-  if (!isOpen) return null;
-
   const [name, setName] = useState('');
   const [role, setRole] = useState('');
   const [specialty, setSpecialty] = useState('');
@@ -26,36 +25,51 @@ export const TeamMemberModal: React.FC<TeamMemberModalProps> = ({
   const [phone, setPhone] = useState('+965 ');
   const [room_number, setRoomNumber] = useState('Suite 101');
   const [is_published, setPublished] = useState(true);
+  const [profileId, setProfileId] = useState<string>('');
+  const [actualFile, setActualFile] = useState<File | null>(null);
+
+  const [staffProfiles, setStaffProfiles] = useState<{id: string, full_name: string, email: string, role: string}[]>([]);
+
+  useEffect(() => {
+    if (isOpen) {
+      getStaffProfiles().then(setStaffProfiles);
+    }
+  }, [isOpen]);
 
   useEffect(() => {
     if (editingMember) {
-      setName(editingMember.name);
+      setName(editingMember.full_name || '');
       setRole(editingMember.role);
       setSpecialty(editingMember.specialty);
       setBio(editingMember.bio);
-      setPhotoUrl(editingMember.photo_url);
-      setEmail(editingMember.email);
-      setPhone(editingMember.phone);
+      setPhotoUrl(editingMember.photo_url || '');
+      setEmail(editingMember.email || '');
+      setPhone(editingMember.phone || '');
       setRoomNumber(editingMember.room_number);
       setPublished(editingMember.is_published);
+      setProfileId(editingMember.profile_id || '');
     } else {
       setName('');
       setRole('Specialist Dentist');
       setSpecialty('General & Cosmetic Dentistry');
       setBio('Dedicated dental specialist providing high-quality dental care.');
       setPhotoUrl('https://images.unsplash.com/photo-1622253692010-333f2da6031d?w=300&auto=format&fit=crop&q=80');
-      setEmail('doctor@royaldental.com');
-      setPhone('+965 2200 1109');
+      setEmail('');
+      setPhone('');
       setRoomNumber('Suite 201');
       setPublished(true);
+      setProfileId('');
     }
-  }, [editingMember]);
+  }, [editingMember, isOpen]);
+
+  if (!isOpen) return null;
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     onSave({
       id: editingMember ? editingMember.id : '',
       name,
+      full_name: name,
       role,
       specialty,
       bio,
@@ -64,8 +78,9 @@ export const TeamMemberModal: React.FC<TeamMemberModalProps> = ({
       phone,
       room_number,
       is_published,
+      profile_id: profileId || undefined,
       working_days: editingMember ? editingMember.working_days : ['Sun', 'Mon', 'Tue', 'Wed', 'Thu']
-    });
+    }, actualFile || undefined);
     onClose();
   };
 
@@ -151,7 +166,6 @@ export const TeamMemberModal: React.FC<TeamMemberModalProps> = ({
               <input
                 id="team-email-input"
                 type="email"
-                required
                 value={email}
                 onChange={e => setEmail(e.target.value)}
                 className="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-xs text-slate-800 focus:ring-2 focus:ring-blue-600 focus:outline-none"
@@ -162,7 +176,6 @@ export const TeamMemberModal: React.FC<TeamMemberModalProps> = ({
               <input
                 id="team-phone-input"
                 type="text"
-                required
                 value={phone}
                 onChange={e => setPhone(e.target.value)}
                 className="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-xs text-slate-800 focus:ring-2 focus:ring-blue-600 focus:outline-none"
@@ -183,16 +196,47 @@ export const TeamMemberModal: React.FC<TeamMemberModalProps> = ({
               />
             </div>
             <div>
-              <label className="block text-xs font-semibold text-slate-700 mb-1">Photo Image URL</label>
-              <input
-                id="team-photo-input"
-                type="text"
-                value={photo_url}
-                onChange={e => setPhotoUrl(e.target.value)}
-                placeholder="https://images.unsplash.com/..."
-                className="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-xs text-slate-800 focus:ring-2 focus:ring-blue-600 focus:outline-none"
-              />
+              <label className="block text-xs font-semibold text-slate-700 mb-1">Doctor Photo</label>
+              <div className="border-2 border-dashed border-slate-300 rounded-lg p-2 text-center hover:border-blue-500 bg-slate-50 transition-colors relative cursor-pointer flex items-center justify-center">
+                <input 
+                  type="file" 
+                  accept="image/png, image/jpeg, image/webp"
+                  className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                  onChange={(e) => {
+                    if (e.target.files && e.target.files.length > 0) {
+                      setActualFile(e.target.files[0]);
+                    }
+                  }}
+                />
+                <p className="text-xs font-semibold text-slate-700 truncate max-w-[200px]">
+                  {actualFile ? actualFile.name : (editingMember?.photo_url ? "Change Photo" : "Upload Image")}
+                </p>
+              </div>
             </div>
+          </div>
+
+          <div className="p-3 bg-amber-50/50 border border-amber-200/60 rounded-lg space-y-2">
+            <div className="flex items-start gap-2">
+              <Link2 className="w-4 h-4 text-amber-600 mt-0.5 shrink-0" />
+              <div>
+                <span className="block text-xs font-bold text-slate-900">Link to Auth Account (Staff/Doctor)</span>
+                <span className="text-[11px] text-slate-600 block mt-0.5">
+                  Doctors must be linked to their auth account here to see their own patients and bookings when they log in.
+                </span>
+              </div>
+            </div>
+            <select
+              value={profileId}
+              onChange={(e) => setProfileId(e.target.value)}
+              className="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-xs text-slate-800 focus:ring-2 focus:ring-blue-600 focus:outline-none"
+            >
+              <option value="">-- No Account Linked (Unlinked) --</option>
+              {staffProfiles.map(profile => (
+                <option key={profile.id} value={profile.id}>
+                  {profile.full_name} ({profile.email}) - {profile.role}
+                </option>
+              ))}
+            </select>
           </div>
 
           <div className="p-3 bg-slate-50 border border-slate-200 rounded-lg flex items-center justify-between">

@@ -36,7 +36,7 @@ export const TeamMembersPage: React.FC<TeamMembersPageProps> = ({
   const filteredMembers = teamMembers.filter((tm) => {
     const q = searchQuery.toLowerCase();
     return !q ||
-      tm.name.toLowerCase().includes(q) ||
+      tm.full_name.toLowerCase().includes(q) ||
       tm.role.toLowerCase().includes(q) ||
       tm.specialty.toLowerCase().includes(q) ||
       tm.room_number.toLowerCase().includes(q);
@@ -116,15 +116,24 @@ export const TeamMembersPage: React.FC<TeamMembersPageProps> = ({
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center justify-between">
                       <span className="text-xs font-bold text-blue-600 font-mono">{member.id}</span>
-                      {/* Published status badge */}
-                      <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1 border ${
-                        member.is_published
-                          ? 'bg-emerald-50 text-emerald-800 border-emerald-300'
-                          : 'bg-slate-100 text-slate-600 border-slate-300'
-                      }`}>
-                        {member.is_published ? <Globe className="w-3 h-3 text-emerald-600" /> : <EyeOff className="w-3 h-3 text-slate-400" />}
-                        {member.is_published ? 'Published' : 'Hidden'}
-                      </span>
+                      <div className="flex flex-col items-end gap-1">
+                        {/* Published status badge */}
+                        <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1 border ${
+                          member.is_published
+                            ? 'bg-emerald-50 text-emerald-800 border-emerald-300'
+                            : 'bg-slate-100 text-slate-600 border-slate-300'
+                        }`}>
+                          {member.is_published ? <Globe className="w-3 h-3 text-emerald-600" /> : <EyeOff className="w-3 h-3 text-slate-400" />}
+                          {member.is_published ? 'Published' : 'Hidden'}
+                        </span>
+                        
+                        {/* Linked Account Badge */}
+                        {!member.profile_id && (
+                          <span className="text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1 bg-amber-50 text-amber-700 border border-amber-300" title="This doctor cannot see their bookings until an admin links their staff account">
+                            <UserCheck className="w-3 h-3" /> Unlinked
+                          </span>
+                        )}
+                      </div>
                     </div>
 
                     <h3 className="text-sm font-bold text-slate-900 mt-1 truncate">{member.full_name}</h3>
@@ -144,10 +153,12 @@ export const TeamMembersPage: React.FC<TeamMembersPageProps> = ({
                     <Building className="w-3.5 h-3.5 text-blue-600 shrink-0" />
                     <span>{member.room_number}</span>
                   </div>
-                  <div className="flex items-center gap-1.5 truncate">
-                    <Mail className="w-3.5 h-3.5 text-slate-400 shrink-0" />
-                    <span className="truncate">{member.email}</span>
-                  </div>
+                  {member.email && (
+                    <div className="flex items-center gap-1.5 truncate">
+                      <Mail className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                      <span className="truncate">{member.email}</span>
+                    </div>
+                  )}
                 </div>
               </div>
 
@@ -216,11 +227,18 @@ export const TeamMembersPage: React.FC<TeamMembersPageProps> = ({
                         <div className="flex items-center gap-3">
                           <img
                           src={(m.photo_url && m.photo_url.trim() !== '') ? m.photo_url : "https://images.unsplash.com/photo-1559839734-2b71ea197ec2?w=100&auto=format&fit=crop&q=80"}
-                          alt={m.name}
+                          alt={m.full_name}
                           className="w-10 h-10 rounded-lg object-cover border border-slate-200 shrink-0"
                         />
                         <div>
-                          <div className="font-bold text-slate-900">{m.name}</div>
+                          <div className="font-bold text-slate-900 flex items-center gap-2">
+                            {m.full_name}
+                            {!m.profile_id && (
+                              <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-sm flex items-center gap-1 bg-amber-50 text-amber-700 border border-amber-300" title="Unlinked account">
+                                <UserCheck className="w-2.5 h-2.5" /> Unlinked
+                              </span>
+                            )}
+                          </div>
                           <div className="text-[11px] text-slate-500 font-mono">{m.id}</div>
                         </div>
                       </div>
@@ -233,7 +251,7 @@ export const TeamMembersPage: React.FC<TeamMembersPageProps> = ({
 
                     <td className="py-3.5 px-4">
                       <div className="font-semibold text-slate-800">{m.room_number}</div>
-                      <div className="text-[11px] text-slate-500">{m.email}</div>
+                      {m.email && <div className="text-[11px] text-slate-500">{m.email}</div>}
                     </td>
 
                     <td className="py-3.5 px-4 text-center">

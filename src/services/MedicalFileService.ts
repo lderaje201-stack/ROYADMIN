@@ -21,7 +21,7 @@ export async function getAllMedicalFiles(): Promise<MedicalFile[]> {
     }
 
     return filesRes.data.map((f: any) => {
-      const patientId = f.user_id || f.patient_id || '';
+      const patientId = f.patient_id || f.user_id || '';
       const patientName = f.patient_name || profilesMap.get(patientId) || 'Patient';
 
       return {
@@ -72,7 +72,7 @@ export async function createMedicalFile(file: Omit<MedicalFile, 'id' | 'created_
     const { data, error } = await supabase
       .from('medical_files')
       .insert([{
-        user_id: file.patient_id || null,
+        patient_id: file.patient_id || null,
         title: file.title,
         category: file.category,
         file_name: actualFile?.name || 'document.pdf',
@@ -92,7 +92,7 @@ export async function createMedicalFile(file: Omit<MedicalFile, 'id' | 'created_
 
     return {
       id: data.id,
-      patient_id: data.user_id || '',
+      patient_id: data.patient_id || data.user_id || '',
       patient_name: file.patient_name || 'Patient',
       title: data.title || data.file_name || 'Medical Record',
       category: data.category || 'General',

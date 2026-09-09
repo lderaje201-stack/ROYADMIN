@@ -4,7 +4,7 @@ import { Conversation, MessageItem } from '../types';
 export async function getAllConversations(): Promise<Conversation[]> {
   try {
     const [convsRes, profilesRes, messagesRes] = await Promise.all([
-      supabase.from('conversations').select('*').order('last_message_at', { ascending: false }),
+      supabase.from('conversations').select('*').order('updated_at', { ascending: false }),
       supabase.from('profiles').select('id, full_name, phone, avatar_url, role'),
       supabase.from('messages').select('*').order('created_at', { ascending: true })
     ]);
@@ -72,7 +72,7 @@ export async function getAllConversations(): Promise<Conversation[]> {
         });
 
         let lastMsgContent = c.last_message || 'Tap to view messages';
-        let lastMsgTimestamp = c.last_message_at;
+        let lastMsgTimestamp = c.updated_at || c.created_at;
 
         if (mappedMessages.length > 0) {
           const lastM = mappedMessages[mappedMessages.length - 1];
@@ -210,18 +210,29 @@ export async function sendMessage(conversationId: string, text: string, senderNa
     const { data: { session } } = await supabase.auth.getSession();
     const senderId = session?.user?.id;
     
-    // Try inserting message with message column first
+    // Try inserting message with body column first
     let insertRes = await supabase.from('messages').insert([{
       conversation_id: conversationId,
       sender_id: senderId || null,
-      user_id: conversationId || null,
       sender_role: 'staff',
-      message: text,
+      body: text,
       is_read: false,
       ...(attachmentUrl ? { attachment_url: attachmentUrl } : {})
     }]);
 
-    // If that fails, try with content column
+    // If that fails, try with message or content column
+    if (insertRes.error) {
+      insertRes = await supabase.from('messages').insert([{
+        conversation_id: conversationId,
+        sender_id: senderId || null,
+        user_id: conversationId || null,
+        sender_role: 'staff',
+        message: text,
+        is_read: false,
+        ...(attachmentUrl ? { attachment_url: attachmentUrl } : {})
+      }]);
+    }
+
     if (insertRes.error) {
       insertRes = await supabase.from('messages').insert([{
         conversation_id: conversationId,
@@ -236,7 +247,7 @@ export async function sendMessage(conversationId: string, text: string, senderNa
 
     if (!insertRes.error) {
       try {
-        await supabase.from('conversations').update({ last_message_at: new Date().toISOString() }).eq('id', conversationId);
+        await supabase.from('conversations').update({ updated_at: new Date().toISOString() }).eq('id', conversationId);
       } catch (ignored) {}
       return true;
     }

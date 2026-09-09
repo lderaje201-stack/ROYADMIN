@@ -4,7 +4,7 @@ import StaffAssistant from "./components/StaffAssistant";
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { NavigationTab, Booking, Conversation, MedicalFile, Patient, TeamMember, ActivityItem, Toast, BookingStatus, Testimonial } from './types';
 import { getAllBookings, createBooking, updateBookingStatus, rescheduleBooking } from './services/BookingService';
 import { getAllConversations, sendMessage, markMessagesAsRead } from './services/MessagingService';
@@ -49,6 +49,7 @@ export default function App() {
   const [isAuthorizedAdmin, setIsAuthorizedAdmin] = useState(false);
   const [adminProfile, setAdminProfile] = useState<any>(null);
   const [userEmail, setUserEmail] = useState<string>('');
+  const [targetChatPatientId, setTargetChatPatientId] = useState<string | null>(null);
 
   // Local State powered by real Supabase data
   const [bookings, setBookings] = useState<Booking[]>([]);
@@ -339,8 +340,8 @@ export default function App() {
     }
   };
 
-  const handleSaveTeamMember = async (member: TeamMember) => {
-    const success = await saveTeamMember(member);
+  const handleSaveTeamMember = async (member: TeamMember, actualFile?: File) => {
+    const success = await saveTeamMember(member, actualFile);
     if (success) {
       addToast('success', `Doctor profile for ${member.full_name} saved successfully.`);
       const tm = await getAllTeamMembers();
@@ -359,6 +360,70 @@ export default function App() {
     setUserEmail('');
     addToast('info', 'Signed out of Royal Dental Staff Admin session.');
   };
+
+  const handleOpenMessageForPatient = (patientId: string, _patientName?: string) => {
+    setTargetChatPatientId(patientId);
+    setActiveTab('messages');
+  };
+
+  // Role-Based Visibility: Doctor Scoping vs Staff/Admin Full Clinic Visibility
+  const isDoctor = (adminProfile?.role || '').toLowerCase() === 'doctor';
+
+  // Find matching doctor team member record by profile_id or id
+  const currentDoctorTeamMember = useMemo(() => {
+    if (!isDoctor || !adminProfile) return null;
+    return teamMembers.find(
+      tm => (tm.profile_id && tm.profile_id === adminProfile.id) ||
+            tm.id === adminProfile.id
+    ) || null;
+  }, [isDoctor, adminProfile, teamMembers]);
+
+  const doctorProfileId = currentDoctorTeamMember?.profile_id || adminProfile?.id;
+  const doctorTeamMemberId = currentDoctorTeamMember?.id;
+
+  const validDoctorIdentifiers = useMemo(() => {
+    const s = new Set<string>();
+    if (doctorProfileId) s.add(doctorProfileId);
+    if (doctorTeamMemberId) s.add(doctorTeamMemberId);
+    if (adminProfile?.id) s.add(adminProfile.id);
+    return s;
+  }, [doctorProfileId, doctorTeamMemberId, adminProfile]);
+
+  // Scoped Bookings:
+  // When role is 'doctor': only show records where doctor_id matches their own team_members.profile_id / id
+  // When role is 'staff' or 'admin': show everything
+  const scopedBookings = useMemo(() => {
+    if (!isDoctor) return bookings;
+    return bookings.filter(b => b.doctor_id && validDoctorIdentifiers.has(b.doctor_id));
+  }, [isDoctor, bookings, validDoctorIdentifiers]);
+
+  // Scoped Patients:
+  // A doctor should never see another doctor's patients
+  // Only show patients who have bookings with this doctor
+  const scopedPatients = useMemo(() => {
+    if (!isDoctor) return patients;
+    const doctorPatientIds = new Set(scopedBookings.map(b => b.patient_id).filter(Boolean));
+    return patients.filter(p => doctorPatientIds.has(p.id));
+  }, [isDoctor, patients, scopedBookings]);
+
+  // Scoped Testimonials:
+  // A doctor should never see testimonials tied to services they didn't perform
+  // Only show testimonials submitted by patients who have bookings/treatments with this doctor
+  const scopedTestimonials = useMemo(() => {
+    if (!isDoctor) return testimonials;
+    const doctorPatientIds = new Set(scopedBookings.map(b => b.patient_id).filter(Boolean));
+    return testimonials.filter(t => {
+      const patientId = t.patient_id || t.user_id;
+      return patientId && doctorPatientIds.has(patientId);
+    });
+  }, [isDoctor, testimonials, scopedBookings]);
+
+  // Scoped Medical Files:
+  const scopedMedicalFiles = useMemo(() => {
+    if (!isDoctor) return medicalFiles;
+    const doctorPatientIds = new Set(scopedPatients.map(p => p.id));
+    return medicalFiles.filter(f => doctorPatientIds.has(f.patient_id));
+  }, [isDoctor, medicalFiles, scopedPatients]);
 
   // Auth & RBAC Rendering Guards
   if (isAuthChecking) {
@@ -400,10 +465,10 @@ export default function App() {
     );
   }
 
-  // Counters for badges
-  const pendingBookingsCount = bookings.filter(b => b.status === 'Pending').length;
+  // Counters for badges (respects doctor role scoping)
+  const pendingBookingsCount = scopedBookings.filter(b => b.status === 'Pending').length;
   const unreadMessagesCount = conversations.reduce((acc, c) => acc + c.unread_count, 0);
-  const unreviewedFilesCount = medicalFiles.filter(f => !f.reviewed).length;
+  const unreviewedFilesCount = scopedMedicalFiles.filter(f => !f.reviewed).length;
 
   return (
     <div id="main-application-container" className="min-h-screen bg-[#fafafa] flex flex-col font-sans">
@@ -442,9 +507,9 @@ export default function App() {
               setSearchQuery={setSearchQuery}
               isSidebarCollapsed={isSidebarCollapsed}
               onToggleSidebar={handleToggleSidebar}
-              patients={patients}
-              bookings={bookings}
-              medicalFiles={medicalFiles}
+              patients={scopedPatients}
+              bookings={scopedBookings}
+              medicalFiles={scopedMedicalFiles}
               teamMembers={teamMembers}
             />
           </div>
@@ -454,10 +519,10 @@ export default function App() {
             {activeTab === 'overview' && (
               <OverviewPage
                 adminProfile={adminProfile}
-                bookings={bookings}
+                bookings={scopedBookings}
                 conversations={conversations}
-                medicalFiles={medicalFiles}
-                patients={patients}
+                medicalFiles={scopedMedicalFiles}
+                patients={scopedPatients}
                 activities={activities}
                 onNavigateTab={setActiveTab}
                 onOpenNewBookingModal={() => setIsBookingModalOpen(true)}
@@ -468,7 +533,7 @@ export default function App() {
 
             {activeTab === 'bookings' && (
               <BookingsPage
-                bookings={bookings}
+                bookings={scopedBookings}
                 onUpdateStatus={handleUpdateBookingStatus}
                 onRescheduleBooking={handleRescheduleBooking}
                 onOpenNewBookingModal={() => setIsBookingModalOpen(true)}
@@ -479,29 +544,30 @@ export default function App() {
             {activeTab === 'messages' && isAuthorizedAdmin && (
               <MessagesPage
                 conversations={conversations}
-                patients={patients}
+                patients={scopedPatients}
                 onSendMessage={handleSendMessage}
                 onMarkAsRead={handleMarkAsRead}
                 searchQuery={searchQuery}
                 onShowToast={(type, msg) => addToast(type, msg)}
                 onNavigateTab={setActiveTab}
+                targetPatientId={targetChatPatientId}
               />
             )}
 
             {activeTab === 'medical-files' && (
               <MedicalFilesPage
-                medicalFiles={medicalFiles}
+                medicalFiles={scopedMedicalFiles}
                 onToggleReviewed={handleToggleFileReviewed}
                 onOpenNewFileModal={() => setIsMedicalFileModalOpen(true)}
                 searchQuery={searchQuery}
-                patients={patients}
+                patients={scopedPatients}
                 onShowToast={(type, msg) => addToast(type, msg)}
               />
             )}
 
             {activeTab === 'patients' && (
               <PatientsPage
-                patients={patients}
+                patients={scopedPatients}
                 onOpenResetPasswordModal={(p) => setPatientForResetPassword(p)}
                 onOpenNewPatientModal={() => setIsPatientModalOpen(true)}
                 searchQuery={searchQuery}
@@ -526,17 +592,24 @@ export default function App() {
 
             {activeTab === 'testimonials' && (
               <TestimonialsPage
-                testimonials={testimonials}
+                testimonials={scopedTestimonials}
                 setTestimonials={setTestimonials}
+                bookings={scopedBookings}
+                patients={scopedPatients}
                 searchQuery={searchQuery}
                 onToast={(type, msg) => addToast(type, msg)}
+                onMessagePatient={handleOpenMessageForPatient}
+                onRefresh={async () => {
+                  const t = await getAllTestimonials();
+                  setTestimonials(t);
+                }}
               />
             )}
 
             {activeTab === 'analytics' && (
               <AnalyticsPage
-                bookings={bookings}
-                patients={patients}
+                bookings={scopedBookings}
+                patients={scopedPatients}
                 onNavigateTab={setActiveTab}
               />
             )}

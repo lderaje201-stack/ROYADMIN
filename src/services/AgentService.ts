@@ -56,7 +56,7 @@ export async function updateActionStatus(id: string, status: 'approved' | 'rejec
                    sender_role: 'staff',
                    content: finalPayload.message || finalPayload.content
                }]);
-               await supabase.from('conversations').update({ last_message_at: new Date().toISOString() }).eq('id', action.target_id);
+               await supabase.from('conversations').update({ updated_at: new Date().toISOString() }).eq('id', action.target_id);
             } else if (action.action_type === 'confirm_booking') {
                await supabase.from('bookings').update({ status: 'Confirmed' }).eq('id', action.target_id);
             }

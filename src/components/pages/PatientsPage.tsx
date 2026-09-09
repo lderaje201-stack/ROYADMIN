@@ -165,7 +165,7 @@ export const PatientsPage: React.FC<PatientsPageProps> = ({
             <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-900 text-white">
               <div className="flex items-center gap-2">
                 <Users className="w-5 h-5 text-blue-400" />
-                <h3 className="text-sm font-bold">Patient Chart: {selectedPatientForView.name}</h3>
+                <h3 className="text-sm font-bold">Patient Chart: {selectedPatientForView.full_name}</h3>
               </div>
               <button
                 onClick={() => setSelectedPatientForView(null)}
@@ -177,7 +177,7 @@ export const PatientsPage: React.FC<PatientsPageProps> = ({
 
             <div className="p-6 space-y-4 text-xs">
               <div className="p-3 bg-slate-50 border border-slate-200 rounded-lg space-y-1">
-                <div className="text-sm font-bold text-slate-900">{selectedPatientForView.name}</div>
+                <div className="text-sm font-bold text-slate-900">{selectedPatientForView.full_name}</div>
                 <div className="text-slate-500 font-mono">Chart ID: {selectedPatientForView.id}</div>
                 <div className="text-slate-600">Gender: {selectedPatientForView.gender} • Age: {selectedPatientForView.age}</div>
               </div>

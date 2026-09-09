@@ -38,8 +38,8 @@ export const MedicalFileModal: React.FC<MedicalFileModalProps> = ({
 
     onSave({
       patient_id,
-      patient_name: patientObj ? patientObj.name : 'Unknown Patient',
-      title: title || `${category} - ${patientObj?.name || 'Scan'}`,
+      patient_name: patientObj ? patientObj.full_name : 'Unknown Patient',
+      title: title || `${category} - ${patientObj?.full_name || 'Scan'}`,
       category,
       uploaded_by,
       file_size: actualFile ? `${(actualFile.size / 1024 / 1024).toFixed(2)} MB` : file_size,

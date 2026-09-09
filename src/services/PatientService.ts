@@ -11,22 +11,22 @@ export async function getAllPatients(): Promise<Patient[]> {
   try {
     const [profilesRes, bookingsRes] = await Promise.all([
       supabase.from('profiles').select('*').order('created_at', { ascending: false }),
-      supabase.from('bookings').select('user_id, preferred_date, status, created_at')
+      supabase.from('bookings').select('patient_id, booking_date, status, created_at')
     ]);
 
     if (profilesRes.error || !profilesRes.data) {
       return [];
     }
 
-    // Group bookings by user_id
+    // Group bookings by patient_id
     const bookingsByPatient = new Map<string, any[]>();
     if (bookingsRes.data) {
       for (const b of bookingsRes.data) {
-        if (b.user_id) {
-          if (!bookingsByPatient.has(b.user_id)) {
-            bookingsByPatient.set(b.user_id, []);
+        if (b.patient_id) {
+          if (!bookingsByPatient.has(b.patient_id)) {
+            bookingsByPatient.set(b.patient_id, []);
           }
-          bookingsByPatient.get(b.user_id)!.push(b);
+          bookingsByPatient.get(b.patient_id)!.push(b);
         }
       }
     }
@@ -36,8 +36,8 @@ export async function getAllPatients(): Promise<Patient[]> {
       const total_visits = pBookings.length;
       let last_visit = 'None yet';
       if (pBookings.length > 0) {
-        const sorted = [...pBookings].sort((a, b) => new Date(b.created_at || b.preferred_date).getTime() - new Date(a.created_at || a.preferred_date).getTime());
-        last_visit = sorted[0].preferred_date || new Date(sorted[0].created_at).toLocaleDateString();
+        const sorted = [...pBookings].sort((a, b) => new Date(b.created_at || b.booking_date).getTime() - new Date(a.created_at || a.booking_date).getTime());
+        last_visit = sorted[0].booking_date || new Date(sorted[0].created_at).toLocaleDateString();
       }
 
       return {

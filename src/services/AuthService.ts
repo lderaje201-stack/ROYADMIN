@@ -8,7 +8,20 @@ export async function getAuthenticatedAdminUser(): Promise<{
   error?: string;
 }> {
   try {
-    const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+    const sessionPromise = supabase.auth.getSession();
+    const timeoutPromise = new Promise<{ data: { session: any }, error: any }>((_, reject) => {
+      setTimeout(() => reject(new Error('Supabase getSession timeout')), 8000);
+    });
+    
+    let sessionRes;
+    try {
+      sessionRes = await Promise.race([sessionPromise, timeoutPromise]);
+    } catch (err) {
+      console.warn('[AUTH] getSession timed out or failed:', err);
+      return { session: null, profile: null, isAdmin: false, error: 'Auth check timed out.' };
+    }
+    
+    const { data: { session }, error: sessionError } = sessionRes;
     if (sessionError || !session || !session.user) {
       return { session: null, profile: null, isAdmin: false };
     }

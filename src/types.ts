@@ -13,12 +13,15 @@ export type NavigationTab =
 export interface Testimonial {
   id: string;
   user_id: string;
+  patient_id?: string;
+  patient_name?: string;
   user_name?: string;
   user_avatar?: string;
   rating: number;
   comment: string;
   is_featured: boolean;
   is_published: boolean;
+  is_anonymous?: boolean;
   created_at: string;
 }
 
@@ -101,6 +104,7 @@ export interface Patient {
 
 export interface TeamMember {
   id: string;
+  profile_id?: string;
   full_name: string;
   role: string;
   specialty: string;
